@@ -9,7 +9,12 @@ output: html_notebook
 
 This has not been edited or even checked -- it's just the same as what was created for Spring 2019 as homework before the first digital lab. I'm likely to do that again, having it assigned and have some sort of assignment inside of it, so that students have to work through to the end, do a small exercise, and then turn it in, maybe on Canvas and maybe on GitHub. People will turn it in 1.5 weeks before the first digital lab. Accordingly, during the lab the week before the first digital lab, if people are really struggling there can be a help session at some point (mid-way break in lab, or at end). Then I will know everyone has done it and can move a bit more quickly and confidently in first in-person digital lab. 
 
+# Edits:
+# Line 65
+# Line 273, see if this error still happens after restarting R
+# Line 348, same question as Line 65
 
+### Start
 
 Welcome to your first experience (in this class) with an [R Markdown](http://rmarkdown.rstudio.com) Notebook. 
 
@@ -347,8 +352,3 @@ class(list4_as_factor_then_numeric)
 A follow up lesson will demonstrate data downloading, more summary statistics, simple statistical tests and statistical models, and some plotting of data (see "1.2 Introducing getting, testing and plotting data").
 # Again, will we have this follow up lesson?
 =======
-
-# Edits:
-# Line 65
-# Line 273, see if this error still happens after restarting R
-# Line 348, same question as Line 65

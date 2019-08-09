@@ -5,11 +5,12 @@ output: html_notebook
 
 This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. 
 
-#### Jared
+### Jared
 
 This is a monster of a notebook. One thing to look out for is overly repetitious places, and maybe opportunities to break it into smaller pieces. 
 
 ### Start
+
 Using this Notebook will be much more understandable if you have worked through the lesson "Introducing R, R Studio and R Notebooks."  
 
 In this Notebook, we're going to start working right away coding. Some examples will be with tiny data sets, which are often referred to as "Toy" data sets. Other examples will immediately be real and sometimes quite large data sets, such as the 2015 complete inventory of New York City Street Trees. With these, lessons will include creating small data sets, exploring and filtering and importing and subsetting and re-shaping larger data sets. 
@@ -18,9 +19,9 @@ Assuming that you have a prior background in basic statistics from high school o
 
 In addition, you will start to learn about biodiversity statistics, such as quantifying biodiversity in terms of species and their abundances and quantitatively comparing how biodiversity may differ from one location to another. Topics in systematics such as species nomenclature and phylogenetics will be connected to the use of large databases where data are stored, from biogeography to genomics. 
 
-This notebook adapts from extensive teaching material have been developed via an NSF-supported research center at the University of Tennessee called NIMBIOS, the National Institute for Mathematical and Biological Synthesis, with notable contributions by Nick Matzke and Dan Warren. I also draw heavily on tutorials from R Open Science and, for the VEGAN and PICANTE packages, from tutorials by VEGAN developer Jari Oksanen and Pete Clark.  
+This notebook is adapted from extensive teaching materials that have been developed via an NSF-supported research center at the University of Tennessee called NIMBIOS, the National Institute for Mathematical and Biological Synthesis, with notable contributions by Nick Matzke and Dan Warren. I also draw heavily on tutorials from R Open Science and, for the VEGAN and PICANTE packages, from tutorials by VEGAN developer Jari Oksanen and Pete Clark.  
 
-As you work through this and companion R Notebooks, you will be encouraged to explore a range of databases and tools: the NYC tree map and NYC Open Data, BIEN (for plants), GBIF (for all organisms) and others. These explorations can and should blend working through these notebooks and also perusing how the database tools work in a Web browser. 
+As you work through this and companion R Notebooks, you will be encouraged to explore a range of databases and tools: the NYC Tree Map and NYC Open Data, BIEN (for plants), GBIF (for all organisms) and others. These explorations can and should blend working through these notebooks and also perusing how the database tools work in a Web browser. 
 
 #Defining terms - a toy example
 
@@ -29,14 +30,13 @@ As you work through this and companion R Notebooks, you will be encouraged to ex
 #We are going to do something simple. We are going to define a complex variable in the form of a vector.
 #Ecologists would tend to call this a sample. Tree ecologists might call it a "stand" of trees.
 #Think of each individual letter as an individual organism. Each unique letter is a different species that was found within a defined spatial area, a scoop of seawater, or during an interval of time while watching or listening to critters. 
-one=c("A","A","A","A","A","A","B","B","B","B","B","B","C","C","C","C","C","C","D","E","F","G","H")
+one <- c("A","A","A","A","A","A","B","B","B","B","B","B","C","C","C","C","C","C","D","E","F","G","H")
 one
 ```
 
-Now we have output. That came from the last line, line 30. 
+Now we have output. That came from the last line, line 28. 
 
-What does this output mean? It is priting our sample, as a vector variable. Just be looking at how we typed in the variables, or at the output, it's possible to see that Species A, Species B and Species C are all equally common. In contrast, Species D, E, F and G are rare in this sample. Each appears only once, known as "singletons."
-
+What does this output mean? It is printing our sample, as a vector variable. Just by looking at how we typed in the variables, or at the output, it's possible to see that Species A, Species B and Species C are all equally common. In contrast, Species D, E, F, G, and H are rare in this sample. Each appears only once, known as "singletons".
 
 ```{r}
 #If we wanted to review other aspects of the variable just created, we can use some of the commands below
@@ -47,7 +47,7 @@ unique(one)
 
 ```{r}
 #Here is another sample:
-three=c("A","A","A","A","A","A","B","B","B","B","B","B","B","C","C","C","C","C","C","C","D","E","F","G","Q")
+three <- c("A","A","A","A","A","A","B","B","B","B","B","B","B","C","C","C","C","C","C","C","D","E","F","G","Q")
 #practice using some of the commands above, for one. Then answer the questions below.
 class(three)
 length(three)
@@ -63,73 +63,71 @@ table(three)
 
 ####What did the commands unique and table reveal, and how are they helpful in comparing the two variables?
 
-
 ####What does abundance mean? For example, what do "high abundance" and "low abundance" mean? Is this related to commonness and rarity? Might this be related to being endangered or extinction prone? Do you have information about abundance from this output? 
 
-We will now be starting to move beyond just entering data in to R and looking at it. Now we need to add three packages to your R Studio software, and then load those packages. This is another super-important lesson that you'll adapt for repeated use.
+We will now be starting to move beyond just entering data into R and looking at it. Now we need to add three packages to your R Studio software, and then load those packages. This is another super-important lesson that you'll adapt for repeated use.
 
 ```{R}
 #install(plyr)
 #This line for installing is "commented out" because you don't need to keep re-installing a package if it's already installed. You just need to load the package, which is done in the lines below with the "library" command.
 #install(vegan)
 #install(labdsv)
+library(plyr)
 library(vegan)
 library(labdsv)
 ```
 
-
 ```{r}
 one
-one.ab=count(one)
+one.ab <- count(one)
 #We are using something called a function. This function, called "count" does exactly that. It looks for unique elements in the variable, counts each out. The output is a table of each of the species and the count refers to the number of occurrences in the sample. 
 one.ab
 ```
 
 ```{r}
 three
-three.ab=count(three)
+three.ab <- count(three)
 three.ab
 ```
 
-Now that we have quantification of the commonness of A, B and C in the sample called "one", which we can compare to the sample called "three". In both, they are equally common, almost. They all appear at leaset six times. In contrast, other species are singletons. We can think about this in terms of proportion. In sample "one" there are six A out of twenty-three total, or 6/23 or 0.26. In the sample "three",  the singletons (E, F, G and Q) are in a proportion of one in 25, 1/25 or 0.04.
-
+Now that we have quantification of the commonness of A, B and C in the sample called "one", we can compare it to the sample called "three". In both, they are equally common, almost. They all appear at least six times. In contrast, other species are singletons. We can think about this in terms of proportion. In sample "one" there are six A out of twenty-three total, or 6/23 or 0.26. In the sample "three",  the singletons (E, F, G and Q) are in a proportion of one in 25, 1/25 or 0.04.
 
 ```{R}
 #We can combine two of these vectors to  compare them, which will use the R packages VEGAN and LABDSV.
 #But before we do the combining, we must add a variable to allow keeping track of which sample is which
-one.ab=data.frame("one", one.ab)
+one.ab <- data.frame("one", one.ab)
 one.ab
 #This added a first column with every row populated by the string variable "one"
-#Let's also re-name columns. Later, our analyses of species richenss will need specifically named variables. 
-names(one.ab)<-c("ListID", "SpeciesID", "Freq")
+#Let's also re-name columns. Later, our analyses of species richness will need specifically named variables. 
+names(one.ab) <- c("ListID", "SpeciesID", "Freq")
 one.ab
 ```
 
 ```{R}
 #Repeat for the other sample
-three.ab=data.frame("three", three.ab)
+three.ab <- data.frame("three", three.ab)
 three.ab
 #This added a first column with every row populated by the string variable "three"
-#Let's also re-name columns. Later, our analyses of species richenss will need specifically named variables. 
-names(three.ab)<-c("ListID", "SpeciesID", "Freq")
+#Let's also re-name columns. Later, our analyses of species richness will need specifically named variables. 
+names(three.ab) <- c("ListID", "SpeciesID", "Freq")
 three.ab
 ```
 
 ```{r}
 #We are going to use a command called "rbind" to combine these two samples into one, in a format that keeps track of which is which
-onethree=rbind(one.ab, three.ab)
+onethree <- rbind(one.ab, three.ab)
 onethree
 dim(onethree)
 #Next, we will use a powerful function in a package called LABDSV. 
-#That means we must load this package. (You may need to install it before loading it).
+#That means we must load this package. (You may need to install it before loading it, if you haven't already done so).
 #library("labdsv")
 #Now we have access to the function "matrify". It converts this list of sample IDs, species and site-specific abundances into a matrix in which species names are column headings, and row names are samples. To do this, it creates a master list of all species in all samples. A matrix like this is useful for quantifying multiple aspects of biodiversity. 
-onethree.ab<-matrify(onethree)
+onethree.ab <- matrify(onethree)
 onethree.ab
 #If we look at the dimensions of this matrix, what does it mean? What is 2? What is 9?
 dim(onethree.ab)
 ```
-The command "dim" refers to the dimension of this data frame: it has two rows and nine columns. 
+The command "dim" refers to the dimensions of this data frame: it has two rows and nine columns. 
 
 This command is super-helpful in keeping track of changes in your data-frame as you do things like sub-set or otherwise re-arrange columns or rows. 
 
@@ -137,7 +135,7 @@ This command is super-helpful in keeping track of changes in your data-frame as 
 
 ### What is a Diversity Index? (There are many indices!)
 
-Let's start by defining one. It's the Shannon-Weaver Diversity Index (H). This may be familiar if you have taken ecology or conservation biolgoy. 
+Let's start by defining one. It's the Shannon-Weaver Diversity Index (H). This may be familiar if you have taken ecology or conservation biology. 
 
 This index examines each species for the proportion of individuals that it contributes to the total individuals of all species in the sample (Pi). 
 
@@ -153,31 +151,27 @@ one
 length(one)
 ```
 
-
-where N total = 23 individuals
-
 Let Ni be the number of individuals of any given species, and Pi = Ni/Ntotal:
 
 Species	Ni	Pi            	ln(Pi)  	Pi * ln(Pi)
 A	      6	  6/23 = 0.26   	-1.34   	-0.35
 B	      6	  6/23 = 0.26   	-1.34   	-0.35
 C	      6	  6/23 = 0.26   	-1.34   	-0.35
-D       1   1/23 = 0.045	  -3.13    	-0.136
-E       1   1/23 = 0.045	  -3.13    	-0.136
-F       1   1/23 = 0.045	  -3.13    	-0.136
-G       1   1/23 = 0.045	  -3.13    	-0.136
-H       1   1/23 = 0.045	  -3.13    	-0.136
+D       1   1/23 = 0.043	  -3.13    	-0.136
+E       1   1/23 = 0.043	  -3.13    	-0.136
+F       1   1/23 = 0.043	  -3.13    	-0.136
+G       1   1/23 = 0.043	  -3.13    	-0.136
+H       1   1/23 = 0.043	  -3.13    	-0.136
 Q       0   0/23 = 0          0          0
 				H = -(-1.73)
 				
-You can try doing a similar calculation for Sample "three" and then compare to the values obtained from R using the VEGAN package, which is done with the command below
+You can try doing a similar calculation for sample "three" and then compare to the values obtained from R using the VEGAN package, which is done with the command below:
 
 ```{r}
-(shannon<-diversity(onethree.ab, index = "shannon"))
+(shannon <- diversity(onethree.ab, index = "shannon"))
 ```
 				
-
-Another measure of diversity, Simpson's index. There are actually a lot of different versions of Simpsons index, all roughly based on the likelihood that any two randomly encountered individuals are the same species. 
+Another measure of diversity is Simpson's index. There are actually a lot of different versions of Simpson's index, all roughly based on the likelihood that any two randomly encountered individuals are the same species. 
 
 In VEGAN, it is calculated as
 
@@ -204,22 +198,19 @@ Q       0	  0
 D = 1 - Sum(p^2) = 0.786
 
 ```{r}
-simpson<-diversity(onethree.ab, index = "simpson")
+simpson <- diversity(onethree.ab, index = "simpson")
 simpson
 ```
 
+# For both Shannon (H) and Simpson (D) indices, higher values indicate more diversity.
 
+# Using R to check your manual calculations of H, D
 
-
-
-# Using R to check your manual calculations of H, J
-
-Let's do a more realistic comparison of samples. Here are data from two real NYC blocks, in Inwood, and the street trees growing on them
+Let's do a more realistic comparison of samples. Here are data from two real NYC blocks, in Inwood, and the street trees growing on them.
 
 ```{r}
-#First let's make a vector with a list of trees on Cumming Street, 
-#which is in Inwood, a Manhattan neighborhood
-cummings=c("Ginkgo biloba",
+#First let's make a vector with a list of trees on Cumming Street, which is in Inwood, a Manhattan neighborhood.
+cumming <- c("Ginkgo biloba",
 "Acer rubrum",
 "Ginkgo biloba",
 "Pyrus calleryana",
@@ -235,7 +226,7 @@ cummings=c("Ginkgo biloba",
 "Ginkgo biloba",
 "Prunus serrulata")
 #Here's another Inwood block, the very short and beautiful block of West 217th Street
-West217 = c("Tilia cordata",
+West217 <- c("Tilia cordata",
 "Gleditsia triacanthos var. inermis",
 "Tilia cordata",
 "Malus",
@@ -247,102 +238,95 @@ West217 = c("Tilia cordata",
 "Tilia cordata")
 ```
 
-
 ```{r}
 #You can get a count of the trees by asking for the length of the vectors you just created
-length(cummings)
+length(cumming)
 length(West217)
-#The command unique would count the number of species on the block
-unique(cummings)
+#The command unique will count the number of species on the block
+unique(cumming)
 unique(West217)
 #you can combine the two into one step
-length(unique(cummings))
+length(unique(cumming))
 length(unique(West217))
  
 ```
 
-
 ```{r}
 #Now let's turn these into tables that show frequency
-cummings.ab=count(cummings)
-cummings.ab
-West217.ab=count(West217)
-  #Now
-cummings.ab=data.frame("cummings", cummings.ab)
-names(cummings.ab)<-c("ListID", "SpeciesID", "Freq")
-cummings.ab
-West217.ab=data.frame("West217", West217.ab)
-names(West217.ab)<-c("ListID", "SpeciesID", "Freq")
+cumming.ab <- count(cumming)
+cumming.ab
+West217.ab <- count(West217)
+West217.ab
+
+#Now add ID column and rename columns
+cumming.ab <- data.frame("cumming", cumming.ab)
+names(cumming.ab) <- c("ListID", "SpeciesID", "Freq")
+cumming.ab
+West217.ab <- data.frame("West217", West217.ab)
+names(West217.ab) <- c("ListID", "SpeciesID", "Freq")
+West217.ab
 ```
-
-
-
 
 ```{r}
 #Simple way to get diversity statistics, if a bit repetitive, inefficient, and error-prone
-shannonC<-diversity(cummings.ab$Freq, index = "shannon")
+shannonC <- diversity(cumming.ab$Freq, index = "shannon")
 shannonC
-shannonW<-diversity(West217.ab$Freq, index = "shannon")
+shannonW <- diversity(West217.ab$Freq, index = "shannon")
 shannonW
-simpsonC<-diversity(cummings.ab$Freq, index = "simpson")
+simpsonC <- diversity(cumming.ab$Freq, index = "simpson")
 simpsonC
-simpsonW<-diversity(West217.ab$Freq, index = "simpson")
+simpsonW <- diversity(West217.ab$Freq, index = "simpson")
 simpsonW
 ```
 
-
 ```{r}
 #A better way: combine and matrify!
-inwood=rbind(cummings.ab, West217.ab)
+inwood <- rbind(cumming.ab, West217.ab)
 inwood
-inwood.mat=matrify(inwood)
+inwood.mat <- matrify(inwood)
 inwood.mat
 ```
 
-
-
 ```{r}
-shannon<-diversity(inwood.mat, index = "shannon")
+shannon <- diversity(inwood.mat, index = "shannon")
 shannon
-simpson<-diversity(inwood.mat, index = "simpson")
+simpson <- diversity(inwood.mat, index = "simpson")
 simpson
 ```
-
 
 ```{R}
 #Let's add more "toy" data so we can continue to delve into what can be done
 #We need to add more samples if we want to move toward making multiple pairwise comparisons
-two=c("A","A","A","A","A","A","B","B","B","B","B","B","B","B","C","C","C","C","C","C","D","D","D","D","D","D","D","E","F","E","E","E","E","E","F","F","F","F","F","F","F","F","F","G","G","G","G","G","G","H","H","H","H","H","H","H","H")
-five=c("A","A","A","A","A","A","B","B","B","B","B","B","B","D","D","D","D","D","D","D","J","K","L","M","N")
+two <- c("A","A","A","A","A","A","B","B","B","B","B","B","B","B","C","C","C","C","C","C","D","D","D","D","D","D","D","E","F","E","E","E","E","E","F","F","F","F","F","F","F","F","F","G","G","G","G","G","G","H","H","H","H","H","H","H","H")
+five <- c("A","A","A","A","A","A","B","B","B","B","B","B","B","D","D","D","D","D","D","D","J","K","L","M","N")
 #Here are two additional samples named "two" and "five"
 #By adding to this chunk of code (and running it), see if you can add to the output above to obtain similar data
-two.ab=count(two)
+two.ab <- count(two)
 two.ab
-five.ab=count(five)
+five.ab <- count(five)
 five.ab
 #Repeating what we did earlier, to process these lists so that we can incorporate them into an abundance matrix
-two.ab=data.frame("two", two.ab)
+two.ab <- data.frame("two", two.ab)
 two.ab
-five.ab=data.frame("five", five.ab)
+five.ab <- data.frame("five", five.ab)
 five.ab
-names(two.ab)<-c("ListID", "SpeciesID", "Freq")
-names(five.ab)<-c("ListID", "SpeciesID", "Freq")
+names(two.ab) <- c("ListID", "SpeciesID", "Freq")
+names(five.ab) <- c("ListID", "SpeciesID", "Freq")
 one.ab
 three.ab
 two.ab
 five.ab
-ab=rbind(one.ab, three.ab, two.ab, five.ab)
+ab <- rbind(one.ab, three.ab, two.ab, five.ab)
 ab
 dim(ab)
-#ab<-ab[,2:4]
-abundance<-matrify(ab)
+#ab <- ab[,2:4]
+abundance <- matrify(ab)
 abundance
 ```
 
 ## After you have a bigger matrix: 
 
 ### What is a Similarity or Dissimilarity Index?
-
 
 What can we do with this bigger matrix? For starters, we can use an index to measure the similarity (or dissimilarity) of any two pairs of lists in the matrix
 
@@ -407,30 +391,31 @@ in which a = 3, d = 1, n = 14
 
 so J  =  3 / (14 - 1) = 0.769 
 
-This index will vary between zero and one. 
+This index will vary between zero and one.
 
 There are many other ways to measure pair-wise similarities. 
 
 If there are more than two lists, it's possible to put together a matrix of pair-wise values for the index, which is what the code below does. 
 
+# We should include a simple summary statement that explains what high and low values indicate for all four indices!!!
+# EX: For Jaccard's Coefficient, values closer to 1 indicate more similarity between the two samples; for Bray-Curtis, values closer to 0 indicate more similarity.
+
 ```{r}
 #the function vegdist is used on the matrix, the metric specified. The assumption is that the data are abundance data, even though some indices require binary data. So the unstated and default argument that is always used in vegdist is that  binary=FALSE. This can and should be changed if computing a presence-absence metric like Jaccard.
-bray = vegdist(abundance, "bray") 
+bray <- vegdist(abundance, "bray")
 bray
-jaccard = vegdist(abundance, "jaccard", binary=T)
+jaccard <- vegdist(abundance, "jaccard", binary=T)
 jaccard
 ```
 
-
-
 ```{r}
 #Now that there are four samples, it makes sense to start seeing if this is enough samples to gauge diversity across these samples. Vegan can compute the cumulative number of species across all four, and then plot them. It will take the plots in random order. Other options for this method argument include "collector" which is the order in which they are entered into the matrix. Another is "rarefaction" which will adjust to take into account that each sample may have a different number of individuals.
-accurve<-specaccum(abundance, method="random", permutations=100)
+accurve <- specaccum(abundance, method="random", permutations=100)
 plot(accurve$sites, accurve$richness,
      xlab="Number of Sites",
      ylab="Species Richness",
      main="Now with four samples")
-accurve2<-specaccum(abundance, method="rarefaction", permutations=100)
+accurve2 <- specaccum(abundance, method="rarefaction", permutations=100)
 plot(accurve2$sites, accurve$richness,
      xlab="Number of Sites",
      ylab="Species Richness",
@@ -438,36 +423,30 @@ plot(accurve2$sites, accurve$richness,
 ```
 ## For this you might want an even bigger matrix (but let's finish up with some plotting): 
 
-### What is an Multi-dimensional Ordination? 
-
+### What is a Multi-dimensional Ordination? 
 
 ```{r}
 head(abundance)
-example_NMDS=metaMDS(abundance, k=2) # Our community-by-species matrix 
-# K=2 is setting the number of reduced dimensions. Increase if high stress is problem. 
-#"The stress, or the disagreement between 2-D configuration and predicted values from the regression"
+example_NMDS <- metaMDS(abundance, k=2) # Our community-by-species matrix 
+# K=2 is setting the number of reduced dimensions. Increase if high stress is a problem: "The stress, or the disagreement between 2-D configuration and predicted values from the regression"
 
-#A good rule of thumb: stress > 0.05 provides an excellent representation in reduced dimensions, > 0.1 is great, >0.2 is good/ok, and stress > 0.3 provides a poor representation
+# A good rule of thumb: stress > 0.05 provides an excellent representation in reduced dimensions, > 0.1 is great, > 0.2 is good/ok, and stress > 0.3 provides a poor representation
 
 plot(example_NMDS)
-test.plot<-ordiplot(example_NMDS,type="n") #Ordination plot function especially for congested plots
+test.plot <- ordiplot(example_NMDS,type="n") #Ordination plot function especially for congested plots
 points(test.plot, "species", pch=21, col="red", bg="yellow")
 
-test.plot<-ordiplot(example_NMDS,type="n") #Ordination plot function especially for congested plots
+test.plot <- ordiplot(example_NMDS,type="n") #Ordination plot function especially for congested plots
 points(test.plot, "sites", col="blue", cex=0.9)
 
-test.plot<-ordiplot(example_NMDS,type="n") #Ordination plot function especially for congested plots
+test.plot <- ordiplot(example_NMDS,type="n") #Ordination plot function especially for congested plots
 points(test.plot, "species", pch=21, col="red", bg="yellow")
 text(test.plot, "sites", col="blue", cex=0.9)
 
-test.plot<-ordiplot(example_NMDS,type="n") #Ordination plot function especially for congested plots
+test.plot <- ordiplot(example_NMDS,type="n") #Ordination plot function especially for congested plots
 text(test.plot, "species", pch=21, col="red", bg="yellow")
 points(test.plot, "sites", col="blue", cex=0.9)
-
-
 ```
-
-
 
 
 
@@ -484,18 +463,18 @@ This last lesson was a critically important lesson. When you're working in R, yo
 
 Note: In your head, eventually:
  
- "wd" will come to mean "working directory"
+"wd" will come to mean "working directory"
 
 The extension (after the dot) is "csv" which stands for "comma separated values". 
 
-If you again exit (temporarily) from R Studio, you could go to other software (Excel, Google Sheets) and open the file there. (Feel free to tray that.) 
+If you again exit (temporarily) from R Studio, you could go to other software (Excel, Google Sheets) and open the file there. (Feel free to try that.) 
 
 Let's instead open this file in R Studio, and as we do that also create a simplified version of the long filename. 
 
 ```{r}
 fn <- read.csv("2015StreetTreesCensus_TREES.csv", header=TRUE)
 #fn stands for "file name" which is perhaps a bit too simplified. Let's change that to ALLtrees
-ALLtrees=fn
+ALLtrees <- fn
 #Now let's use a command to examine the dimensions of the data
 dim(ALLtrees)
 # Wow. There are 683,788 rows in this data set. One row for each street tree. There are also 42 columns.
@@ -2254,3 +2233,10 @@ Why do tall parents tend to produce offspring shorter than themselves? Why does 
 What are possible statistical consequences/hazards of this?
 
 ### Why is all of this rarely explained when regression is taught?
+
+###### Edits
+
+# Make sure to delete all of these edits and the very first "Jared" section when finished.
+# Line 37 may need to be updated w/ correct line number when notebook is done.
+# Line 205, Added explanation of H and D
+# Line 400 and 401 summary statement: need something short and sweet, similar to line 205

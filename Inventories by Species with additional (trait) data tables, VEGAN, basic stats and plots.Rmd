@@ -398,7 +398,7 @@ There are many other ways to measure pair-wise similarities.
 If there are more than two lists, it's possible to put together a matrix of pair-wise values for the index, which is what the code below does. 
 
 # We should include a simple summary statement that explains what high and low values indicate for all four indices!!!
-# EX: For Jaccard's Coefficient, values closer to 1 indicate more similarity between the two samples; for Bray-Curtis, values closer to 0 indicate more similarity.
+# EX: For Bray-Curtis, values closer to 0 indicate more similarity between pairwise samples; for Jaccard's Coefficient, values closer to 1 indicate more similarity.
 
 ```{r}
 #the function vegdist is used on the matrix, the metric specified. The assumption is that the data are abundance data, even though some indices require binary data. So the unstated and default argument that is always used in vegdist is that  binary=FALSE. This can and should be changed if computing a presence-absence metric like Jaccard.
@@ -475,25 +475,21 @@ Let's instead open this file in R Studio, and as we do that also create a simpli
 fn <- read.csv("2015StreetTreesCensus_TREES.csv", header=TRUE)
 #fn stands for "file name" which is perhaps a bit too simplified. Let's change that to ALLtrees
 ALLtrees <- fn
+#The file we just imported is a "data frame"; we can use the class() function to learn what R calls our imported files
+class(ALLtrees)
 #Now let's use a command to examine the dimensions of the data
 dim(ALLtrees)
-# Wow. There are 683,788 rows in this data set. One row for each street tree. There are also 42 columns.
-#Let's look through all 42 column headings
-class(ALLtrees)
-
+#Wow. There are 683,788 rows in this data set. One row for each street tree. There are also 42 columns.
 #Let's look through all 42 column headings
 colnames(ALLtrees)
 # Let's look at the first six lines of data
 head(ALLtrees)
 ```
 
-
-
 ```{r}
 #library(plyr)
 count(ALLtrees$spc_latin)
 count(ALLtrees$spc_common)
-
 ```
 Notice the top line, Line 1, in this table. There are 31,619 rows in this data frame where there is not a Latin name or a common name. Can you think why this might be?
 
@@ -504,32 +500,27 @@ Another way to do it is to eliminate all cases where the name is missing
 
 ```{r}
 dim(ALLtrees)
-Strees=subset(ALLtrees, status=="Alive", select=c(created_at:spc_common, address:y_sp))
-Strees=as.data.frame(Strees)
+Strees <- subset(ALLtrees, status=="Alive", select=c(created_at:spc_common, address:y_sp))
+Strees <- as.data.frame(Strees)
 dim(Strees)
 ```
-
 
 ```{r}
 dim(ALLtrees)
-Strees=subset(ALLtrees, spc_common!="", select=c(created_at:spc_common, address:y_sp))
-Strees=as.data.frame(Strees)
+Strees <- subset(ALLtrees, spc_common!="", select=c(created_at:spc_common, address:y_sp))
+Strees <- as.data.frame(Strees)
 dim(Strees)
 ```
-
 
 ```{r}
 head(Strees)
 levels(Strees$spc_latin);levels(Strees$spc_common)
 ```
 
-
 ```{r}
-freqtable=count(Strees$spc_common)
+freqtable <- count(Strees$spc_common)
 freqtable
 ```
-
-
 
 ```{r}
 sum(freqtable$freq)
@@ -538,12 +529,15 @@ min(freqtable$freq)
 median(freqtable$freq)
 hist(freqtable$freq)
 hist(freqtable$freq, freq=F)
-
 ```
 
 This is incredibly important output. First, you now know which tree is the rarest among 132 different species of street trees on NYC strees? Which is most common? You may need  to scroll in the output above.
 
-Can you write a line of code to compute the frequency of this most common species as a proportion of all NYC street trees? 
+Can you write a line of code to compute the frequency of this most common species as a proportion of all NYC street trees?
+
+```{r}
+
+```
 
 Also, look at the histogram. There is only one species at the maximum - exceeding 80,000 occurrences city-wide. This is the most "popular" or common tree in NYC. There are three more tree species that have between 50-thousand and 70-thousand occurrences. And a few more that exceed 10-thousand occurrences. Nearly 120 of the 132 species planted are less common than that. 
 
@@ -552,7 +546,7 @@ Although these are deliberately planted trees, this histogram is remarkably simi
 ```{r}
 #Can we now calculate the diversity indices we were computing above? 
 #We could try something simple, like:
-NYCshannon=diversity(freqtable$freq, index = "shannon")
+NYCshannon <- diversity(freqtable$freq, index = "shannon")
 NYCspecies=spec
 richNYCshannon
 #Yes, but we need to be sure to set up our data so that the package VEGAN can run its functions properly. #First, you need to transpose (with the function t), dropping the first column of row numbers
@@ -566,7 +560,7 @@ Strees.ab
 #By default, R assigned variable names to all the variables (in columns): v1, v2, v3, ... v132
 #To get rid of those and replace the species names
 #We can get them from original frequency table (the column called x)
-colnames(Strees.ab)= freqtable$x
+colnames(Strees.ab) <- freqtable$x
 Strees.ab
 ```
 
@@ -576,102 +570,97 @@ Strees.ab
 #That's a little silly, because we could use a simpler command, which is the length of the list of species
 (length(Strees.ab))
 #You can also get things like diversity indices, like the Shannon index or Simpson index
-(shannon<-diversity(Strees.ab, index = "shannon"))
-(simpson<-diversity(Strees.ab, index = "simpson"))
+(shannon <- diversity(Strees.ab, index = "shannon"))
+(simpson <- diversity(Strees.ab, index = "simpson"))
 ```
-
 
 ```{r}
 #Previously, we were working with a list of trees for the whole city; now we'll work by borough
 dim(Strees)
-#We use the command sub-set and ask to get only Brooklyn trees, and to exclude trees
-#where there is missing data for species name (which happens because trees are stumps or dead)
+#We use the command sub-set and ask to get only Brooklyn trees, and to exclude trees where there is missing data for species name (which happens because trees are stumps or dead)
 #notice that the equal sign is "==" (hit the equals key twice)
 #also notice that the not-equal sign is "!=" (exclamation point then equals)
-Brooklyn=subset(Strees, boroname=="Brooklyn" & spc_common!="", select=c(created_at:spc_common, address:y_sp))
+Brooklyn <- subset(Strees, boroname=="Brooklyn" & spc_common!="", select=c(created_at:spc_common, address:y_sp))
 dim(Brooklyn)
 #Now we are going to get a frequency breakdown, by species, in a table
-Brooklynfreq=count(Brooklyn$spc_common)
+Brooklynfreq <- count(Brooklyn$spc_common)
 Brooklynfreq
 #We are going to transpose that list (from one column to one row)
 Brooklyn.ab <- as.data.frame(t(Brooklynfreq[,-1]))
 Brooklyn.ab
 #We need to add back in the species names across all the columns
-colnames(Brooklyn.ab)= Brooklynfreq$x
+colnames(Brooklyn.ab) <- Brooklynfreq$x
 Brooklyn.ab
 #Now you can get things like species richness, which is the number of species
-#That's sort of silly, because we know there are 132 species from the command "unique"
+#That's sort of silly, because we know there are 132 species from the command "length"
 (specnumber(Brooklyn.ab))
 (length(Brooklyn.ab))
   #You can also get things like diversity indices, like the Shannon index or Simpson index
-(shannon<-diversity(Brooklyn.ab, index = "shannon"))
-(simpson<-diversity(Brooklyn.ab, index = "simpson"))
+(shannon <- diversity(Brooklyn.ab, index = "shannon"))
+(simpson <- diversity(Brooklyn.ab, index = "simpson"))
 ```
 
-For practice, go throught his code and modify it so that you can get data for another borough, or even for all the boroughs. 
+For practice, go through this code and modify it so that you can get data for another borough, or even for all the boroughs. 
 
 ```{r}
-#But there is a way to somewhat steamline this, which 
-#We were actually using with the Toy example at the very beginning. So let's bring that back
+#But there is a way to somewhat streamline this, which we were actually using with the toy example at the very beginning. So let's bring that back.
 #Get a frequency table from the full subset of Brooklyn street tree data, as before
-Brooklynfreq=count(Brooklyn$spc_common)
+Brooklynfreq <- count(Brooklyn$spc_common)
 #We are not going to transpose
-#Instead, we are going to add an initial left-hand column to the frequency table
-#identifying it as the data from Brookly and give three super-specific column names to the 3 columsn
-BrooklynAB=data.frame("Brooklyn", Brooklynfreq[,1:2])
+#Instead, we are going to add an initial left-hand column to the frequency table identifying it as the data from Brooklyn and give three super-specific column names to the 3 columns
+BrooklynAB <- data.frame("Brooklyn", Brooklynfreq[,1:2])
 names(BrooklynAB) <- c("ListID", "SpeciesID", "Freq")
 head(BrooklynAB)
 ```
 
-
 ```{r}
 #Repeat the sub-setting and frequency table making and formatting for the other 4 boroughs
-Queens=subset(Strees, boroname=="Queens" & spc_common!="", select=c(created_at:spc_common, address:y_sp))
-Queensfreq=count(Queens$spc_common)
-QueensAB=data.frame("Queens", Queensfreq[,1:2])
+Queens <- subset(Strees, boroname=="Queens" & spc_common!="", select=c(created_at:spc_common, address:y_sp))
+Queensfreq <- count(Queens$spc_common)
+QueensAB <- data.frame("Queens", Queensfreq[,1:2])
 names(QueensAB) <- c("ListID", "SpeciesID", "Freq")
-Bronx=subset(Strees, boroname=="Bronx" & spc_common!="", select=c(created_at:spc_common, address:y_sp))
-Bronxfreq=count(Bronx$spc_common)
-BronxAB=data.frame("Bronx", Bronxfreq[,1:2])
+
+Bronx <- subset(Strees, boroname=="Bronx" & spc_common!="", select=c(created_at:spc_common, address:y_sp))
+Bronxfreq <- count(Bronx$spc_common)
+BronxAB <- data.frame("Bronx", Bronxfreq[,1:2])
 names(BronxAB) <- c("ListID", "SpeciesID", "Freq")
-Manhattan=subset(Strees, boroname=="Manhattan" & spc_common!="", select=c(created_at:spc_common, address:y_sp))
-Manhattanfreq=count(Manhattan$spc_common)
-ManhattanAB=data.frame("Manhattan", Manhattanfreq[,1:2])
+
+Manhattan <- subset(Strees, boroname=="Manhattan" & spc_common!="", select=c(created_at:spc_common, address:y_sp))
+Manhattanfreq <- count(Manhattan$spc_common)
+ManhattanAB <- data.frame("Manhattan", Manhattanfreq[,1:2])
 names(ManhattanAB) <- c("ListID", "SpeciesID", "Freq")
-Staten=subset(Strees, boroname=="Staten Island" & spc_common!="", select=c(created_at:spc_common, address:y_sp))
-Statenfreq=count(Staten$spc_common)
-StatenAB=data.frame("Staten", Statenfreq[,1:2])
+
+Staten <- subset(Strees, boroname=="Staten Island" & spc_common!="", select=c(created_at:spc_common, address:y_sp))
+Statenfreq <- count(Staten$spc_common)
+StatenAB <- data.frame("Staten", Statenfreq[,1:2])
 names(StatenAB) <- c("ListID", "SpeciesID", "Freq")
-
 ```
-
 
 ```{r}
-#Combine all five of these new by-species frequency lists into one, and use the matrify command```
-nycAB=rbind(BrooklynAB, BronxAB, ManhattanAB, QueensAB, StatenAB)
-nycAB=matrify(nycAB)
+#Combine all five of these new by-species frequency lists into one, and use the matrify command
+nycAB <- rbind(BrooklynAB, BronxAB, ManhattanAB, QueensAB, StatenAB)
+nycAB <- matrify(nycAB)
 ```
-
 
 ```{r}
 #the function vegdist is used on the matrix, the metric specified. The assumption is that the data are abundance data, even though some indices require binary data. So the unstated and default argument that is always used in vegdist is that  binary=FALSE. This can and should be changed if computing a presence-absence metric like Jaccard.
-bray = vegdist(nycAB, "bray") 
+bray <- vegdist(nycAB, "bray") 
 bray
-jaccard = vegdist(nycAB, "jaccard", binary=T)
+jaccard <- vegdist(nycAB, "jaccard", binary=T)
 jaccard
 ```
+# Remember, for Bray-Curtis, values closer to 0 indicate more similarity between pairwise samples; for Jaccard's Coefficient, values closer to 1 indicate more similarity.
 
-
-
+# Which boroughs are most similar in plant diversity? Least diversity? Do the two indices used here agree with each other? Why or why not?
 
 ```{r}
-#Now that there are four samples, it makes sense to start seeing if this is enough samples to gauge diversity across these samples. Vegan can compute the cumulative number of species across all four, and then plot them. It will take the plots in random order. Other options for this method argument include "collector" which is the order in which they are entered into the matrix. Another is "rarefaction" which will adjust to take into account that each sample may have a different number of individuals.
-accurve<-specaccum(nycAB, method="random", permutations=50)
+#Now that there are five samples, it makes sense to start seeing if this is enough samples to gauge diversity across these samples. Vegan can compute the cumulative number of species across all five, and then plot them. It will take the plots in random order. Other options for this method argument include "collector" which is the order in which they are entered into the matrix. Another is "rarefaction" which will adjust to take into account that each sample may have a different number of individuals.
+accurve <- specaccum(nycAB, method="random", permutations=50)
 plot(accurve$sites, accurve$richness,
      xlab="Number of Sites",
      ylab="Species Richness",
      main="Now with five boroughs")
-accurve2<-specaccum(nycAB, method="rarefaction", permutations=50)
+accurve2 <- specaccum(nycAB, method="rarefaction", permutations=50)
 plot(accurve2$sites, accurve$richness,
      xlab="Number of Sites",
      ylab="Species Richness",
@@ -679,60 +668,55 @@ plot(accurve2$sites, accurve$richness,
 ```
 ## For this you might want an even bigger matrix (but let's finish up with some plotting): 
 
-### What is an Multi-dimensional Ordination? 
-
+### Multi-dimensional ordination, or multi-dimensional scaling (MDS), is a set of techniques used to visualize the similarity of individuals in a dataset.
 
 ```{r}
 head(nycAB)
-example_NMDS=metaMDS(nycAB, k=2) # Our community-by-species matrix 
-# K=2 is setting the number of reduced dimensions. Increase if high stress is problem. 
+example_NMDS <- metaMDS(nycAB, k=2) # Our community-by-species matrix
+# k=2 is setting the number of reduced dimensions. Increase if high stress is problem. 
 #"The stress, or the disagreement between 2-D configuration and predicted values from the regression"
 
-#A good rule of thumb: stress > 0.05 provides an excellent representation in reduced dimensions, > 0.1 is great, >0.2 is good/ok, and stress > 0.3 provides a poor representation
+#A good rule of thumb: stress > 0.05 provides an excellent representation in reduced dimensions, > 0.1 is great, > 0.2 is good/ok, and stress > 0.3 provides a poor representation.
 
 plot(example_NMDS)
-test.plot<-ordiplot(example_NMDS,type="n") #Ordination plot function especially for congested plots
+
+test.plot <- ordiplot(example_NMDS,type="n") #Ordination plot function especially for congested plots
 points(test.plot, "species", pch=21, col="red", bg="yellow")
 
-test.plot<-ordiplot(example_NMDS,type="n") #Ordination plot function especially for congested plots
+test.plot <- ordiplot(example_NMDS,type="n") #Ordination plot function especially for congested plots
 points(test.plot, "sites", col="blue", cex=0.9)
 
-test.plot<-ordiplot(example_NMDS,type="n") #Ordination plot function especially for congested plots
+test.plot <- ordiplot(example_NMDS,type="n") #Ordination plot function especially for congested plots
 points(test.plot, "species", pch=21, col="red", bg="yellow")
 text(test.plot, "sites", col="blue", cex=0.9)
 
-test.plot<-ordiplot(example_NMDS,type="n") #Ordination plot function especially for congested plots
+test.plot <- ordiplot(example_NMDS,type="n") #Ordination plot function especially for congested plots
 text(test.plot, "species", pch=21, col="red", bg="yellow")
 points(test.plot, "sites", col="blue", cex=0.9)
-
-
 ```
 
-
-
-
-
-#### Produce diversity data
+#### NYC Produce diversity data
 
 ```{r}
-produce=read.csv("2013 Produce Diversity Data - completed.csv", row.names=1, header=T)
+produce <- read.csv("2013 Produce Diversity Data - completed.csv", row.names=1, header=T)
 head(produce)
 dim(produce)
 ```
 
-This is a big matrix that could be analyzed as community data. 
+This is a big matrix that could be analyzed as community data.
 
-
+## This code isn't working and I can't figure out why; are we wanting to run species accumulation curves for the produce data? I'm skipping 709-745 for now.
 ```{r}
-#Now that there are four samples, it makes sense to start seeing if this is enough samples to gauge diversity across these samples. Vegan can compute the cumulative number of species across all four, and then plot them. It will take the plots in random order. Other options for this method argument include "collector" which is the order in which they are entered into the matrix. Another is "rarefaction" which will adjust to take into account that each sample may have a different number of individuals.
-accurve<-specaccum(nycAB, method="random", permutations=50)
-plot(accurve$sites, accurve$richness,
+#We will repeat the plotting functions used for NYC Trees above and use them on this NYC produce data frame.
+accurve.prod <- specaccum(produce, method="random", permutations=300)
+plot(accurve.prod$sites, accurve.prod$richness,
      xlab="Number of Sites",
+     ylim=c(0, 200),
      ylab="Species Richness",
-     main="Now with five boroughs")
-accurve2<-specaccum(nycAB, method="rarefaction", permutations=50)
-plot(accurve2$sites, accurve$richness,
-     xlab="Number of Sites",
+     main="NYC Produce")
+accurve2.prod <- specaccum(produce, method="rarefaction", permutations=50)
+plot(accurve2.prod$sites, accurve2.prod$richness,
+     xlab="Number of Stores",
      ylab="Species Richness",
      main="Rarefaction, with five samples")
 ```
@@ -758,18 +742,9 @@ text(test.plot, "sites", col="blue", cex=0.9)
 test.plot<-ordiplot(example_NMDS,type="n") #Ordination plot function especially for congested plots
 text(test.plot, "species", pch=21, col="red", bg="yellow")
 points(test.plot, "sites", col="blue", cex=0.9)
-
-
 ```
 
-
-
-
-####WHAT ABOUT TRAIT DATA?
-
-
-Jared - this is where I ran out of gas and time. The tree data are a good place to learn this stuff
-
+## WHAT ABOUT TRAIT DATA?
 
 We can go back to our initial huge data set of NYC Street trees
 ```{r}
@@ -782,35 +757,133 @@ plot(tree_dbh~health, data=ALLtrees)
 plot(tree_dbh~health, data=ALLtrees, outline=F)
 plot(tree_dbh~sidewalk, data=ALLtrees)
 plot(tree_dbh~sidewalk, data=ALLtrees, outline=F)
-plot(tree_dbh~spe, data=ALLtrees, outline=T)
-##Would be great to develop code to help them see better in boxplots
+plot(tree_dbh~spc_common, data=ALLtrees, outline=T)
+plot(tree_dbh~spc_common, data=ALLtrees, outline=F)
 plot(tree_dbh~spc_common, data=ALLtrees, outline=F, horizontal=T)
+
+##It's difficult to read the x-axis within RStudio when there are this many tree species, but here is a solution:
+plot(tree_dbh~spc_common, data=ALLtrees, outline=F, las=2)
+
+#The 'las=2' command specifies that you want your labels perpendicular to the axis.
+#If your plot isn't showing up in the 'Plots' display of RStudio, then copy, paste and run the code on line 768 directly into your console.
+#When your plot appears, click the 'Export' dropdown menu and choose 'Save as Image'.
+#In the top right of your save options, set Width=2500 and Height=1000, then save the image to your Desktop and observe the widened plot.
 ```
 
+# Is this a good place to split this notebook?
 
-# TESTING DATA (OLD - FROM GALTON DATA SET)
+# STATISTICS
+
+Let's import some data. Francis Galton, one of the founders of statistics, also promoted the science of eugenics. (For a long and wonderful feminist discussion about eugenics, see the book Ghost Stories for Darwin by Banu Subramanian). Galton was also the cousin of Charles Darwin. Galton invented the term "regression". These days, "regression" means fitting the best-fit line to a series of x and y data points. But, why is the weird term "regression" used for this? What is regressing?
+
+Let's look at Galton's original dataset: the heights of parents and children. Source for this data can be found [here](http://www.randomservices.org/random/data/Galton.html).
+
+## TESTING DATA
+
+```{r}
+#Import "Galton.txt" data set as data frame named 'heights'
+heights <- read.table("Galton.txt", header=TRUE, sep="\t")
+#And, look at 'heights'
+heights
+```
+
+898 rows x 6 variables is a lot of data! A great trick in R is to look at just the top rows of a data table.
+
+Close the output from the chunk above. 
+
+Then edit the chunk above.
+
+You can "comment out" lines to be sure they won't run as a command. For heights, add a # in front of it.
+
+Also add a line as follows:
+head(heights)
+
+And, while we're at it, let's get three other pieces of information
+
+#### Column names
+names(heights)
+
+#### Dimensions (rows, columns)
+dim(heights)
+
+#### Class (data.frame, matrix, character, numeric, list, etc.)
+class(heights)
+
+Add those three lines into the chunk above, then run the chunk.
+
+```{r}
+# To summarize, these simple functions are great for quickly viewing information about objects in R. I encourage you to memorize them.
+# View top 6 rows of object
+head(heights)
+# Column names of object
+names(heights)
+# Dimensions of object
+dim(heights)
+# Class of object
+class(heights)
+# Structure of object
+str(heights)
+# Summary of object
+summary(heights)
+```
+
+Now let's look at some summary statistics:
+
+```{r}
+# Mean
+#colMeans(heights)
+colMeans(heights[,c(-1,-4)])
+
+# Min & Max
+apply(X=heights[,c(-1,-4)], MARGIN=2, FUN=min)
+apply(X=heights[,c(-1,-4)], MARGIN=2, FUN=max)
+
+# Standard deviations
+apply(X=heights[,c(-1,-4)], MARGIN=2, FUN=sd)
+```
+
+You cannot get the chunk to run because the colMeans function will not operate on non-numeric variables, in this case the "Family" variable in column 1 and the "Gender" variable in column 4.
+
+```{r}
+# Remember, you can check the class of each variable in your data frame by running:
+str(heights)
+# Here you see that the 'Family' and 'Gender' variables are in a "Factor" format (non-numeric), which is why they don't work in numeric-based functions.
+```
+
+Comment out that very first line (line 834) by adding "#" at the front of the line.
+
+What line 835 is asking for is to use the same dataframe, but to skip the first column and the fourth column.
+
+Now run the chunk again.
+
+Here, the "Height" variable refers to the kids' heights. Let's make this more obvious.
+```{r}
+# Change "Height" variable to the name "Child"
+colnames(heights)[colnames(heights)=="Height"] <- "Child"
+```
 
 ```{r}
 # Make sure variable columns are numeric
 heights$Family = as.numeric(heights$Family)
 heights$Father = as.numeric(heights$Father)
-heights$Height = as.numeric(heights$Height)
+heights$Child = as.numeric(heights$Child)
 heights$Kids = as.numeric(heights$Kids)
 
 # Let's add the Midparent column
 heights[,c("Father","Mother")]
 
 # Take the mean of Father and Mother columns, store in column "Midparent"
-heights$Midparent = apply(X=heights[,c("Father","Mother")], MARGIN=1, FUN=mean)
+heights$Midparent <- apply(X=heights[,c("Father","Mother")], MARGIN=1, FUN=mean)
 
 # View the new column
 head(heights)
+```
 
+```{r}
 # Population Mean Between Two Independent Samples:
 # http://www.r-tutor.com/elementary-statistics/inference-about-two-populations/population-mean-between-two-independent-samples
 
-# (change "Child" to "Height")
-ttest_result1 = t.test(x=heights$Midparent, y=heights$Height, paired=FALSE, alternative="two.sided")
+ttest_result1 = t.test(x=heights$Midparent, y=heights$Child, paired=FALSE, alternative="two.sided")
 ttest_result1
 ```
 
@@ -821,13 +894,15 @@ independent?
 Probably not. Actually, these samples are paired, so let's
 check that:
 
-Population Mean Between Two Matched Samples:
-http://www.r-tutor.com/elementary-statistics/inference-about-two-populations/population-mean-between-two-matched-samples
+```{r}
+# Population Mean Between Two Matched Samples:
+# http://www.r-tutor.com/elementary-statistics/inference-about-two-populations/population-mean-between-two-matched-samples
+
+ttest_result2 = t.test(x=heights$Midparent, y=heights$Child, paired=TRUE, alternative="two.sided")
+ttest_result2
+```
 
 ```{r}
-ttest_result2 = t.test(x=heights$Midparent, y=heights$Height, paired=TRUE, alternative="two.sided")
-ttest_result2
-
 # Compare the two:
 ttest_result1
 ttest_result2
@@ -845,29 +920,27 @@ ttest_result2
 # Let's plot the histograms
 library(lattice)
 hist(heights$Midparent)
-hist(heights$Height)
+hist(heights$Child)
 ```
 
 That's a little hard to compare, due to the different automated scaling of the x-axis.
 
-All the code below is *not* in chunks
+All the code below is *not* in chunks.
 
-You can also run code in an R Notebook by highlighting line(s) and pressing the "Run" icon below, or by pressing Control+Enter. But, the code will show up in the Console window (below). If you want the output to be incorporated into your R Notebook, then put the code into a chunk and then run the chunk. Output will not only appear in this window, but will also be saved into an accompanying 
-notebook html file if you save your work before exiting.
+You can also run code in an R Notebook by highlighting line(s) and pressing the "Run" icon above, or by pressing Control+Enter. But, the code will show up in the Console window (below). If you want the output to be incorporated into your R Notebook, then put the code into a chunk and then run the chunk. Output will not only appear in this window, but will also be saved into an accompanying notebook html file if you save your work before exiting.
 
 Another option shown below is how to make the plots (which will show up in the Plots window, lower right) and then how to save the plot in PDF format when you're happy with it.
 
-```{r}
 # Let's fix the x-axis to be (5 feet, 7 feet)
-xlims = c(5*12, 7*12)
+xlims <- c(5*12, 7*12)
 
 hist(heights$Midparent, xlim=xlims)
-hist(heights$Height, xlim=xlims)
+hist(heights$Child, xlim=xlims)
 
 # Let's fix the y-axis to be (0, 220)
 ylims = c(0, 220)
 hist(heights$Midparent, xlim=xlims, ylim=ylims)
-hist(heights$Height, xlim=xlims, ylim=ylims)
+hist(heights$Child, xlim=xlims, ylim=ylims)
 
 # Let's plot the means and 95% confidence intervals on top
 
@@ -878,27 +951,28 @@ hist(heights$Midparent, xlim=xlims, ylim=ylims)
 abline(v=mean(heights$Midparent), lty="dashed", lwd=2, col="blue")
 
 # Plot the 95% confidence interval (2.5% - 97.5%)
-CI_025 = mean(heights$Midparent) - 1.96*sd(heights$Midparent)
-CI_975 = mean(heights$Midparent) + 1.96*sd(heights$Midparent)
+CI_025 <- mean(heights$Midparent) - 1.96*sd(heights$Midparent)
+CI_975 <- mean(heights$Midparent) + 1.96*sd(heights$Midparent)
 abline(v=CI_025, lty="dotted", lwd=2, col="blue")
 abline(v=CI_975, lty="dotted", lwd=2, col="blue")
 
 # Child values
-hist(heights$Height, xlim=xlims, ylim=ylims)
+hist(heights$Child, xlim=xlims, ylim=ylims)
 
 # Plot the mean
-abline(v=mean(heights$Height), lty="dashed", lwd=2, col="blue")
+abline(v=mean(heights$Child), lty="dashed", lwd=2, col="blue")
 
 # Plot the 95% confidence interval (2.5% - 97.5%)
-CI_025 = mean(heights$Height) - 1.96*sd(heights$Height)
-CI_975 = mean(heights$Height) + 1.96*sd(heights$Height)
+CI_025 <- mean(heights$Child) - 1.96*sd(heights$Child)
+CI_975 <- mean(heights$Child) + 1.96*sd(heights$Child)
 abline(v=CI_025, lty="dotted", lwd=2, col="blue")
 abline(v=CI_975, lty="dotted", lwd=2, col="blue")
 
 # Let's put the plot into nice PDF format to save it
 
+```{r}
 # Open a PDF for writing
-pdffn = "Galton_height_histograms_v1.pdf"
+pdffn <- "Galton_height_histograms_v1.pdf"
 pdf(file=pdffn, width=8, height=10)
 
 # Do 2 subplots
@@ -911,20 +985,20 @@ hist(heights$Midparent, xlim=xlims, ylim=ylims, xlab="height (inches)", ylab="Co
 abline(v=mean(heights$Midparent), lty="dashed", lwd=2, col="blue")
 
 # Plot the 95% confidence interval (2.5% - 97.5%)
-CI_025 = mean(heights$Midparent) - 1.96*sd(heights$Midparent)
-CI_975 = mean(heights$Midparent) + 1.96*sd(heights$Midparent)
+CI_025 <- mean(heights$Midparent) - 1.96*sd(heights$Midparent)
+CI_975 <- mean(heights$Midparent) + 1.96*sd(heights$Midparent)
 abline(v=CI_025, lty="dotted", lwd=2, col="blue")
 abline(v=CI_975, lty="dotted", lwd=2, col="blue")
 
 # Child values
-hist(heights$Height, xlim=xlims, ylim=ylims, xlab="height (inches)", ylab="Count", main="Child heights")
+hist(heights$Child, xlim=xlims, ylim=ylims, xlab="height (inches)", ylab="Count", main="Child heights")
 
 # Plot the mean
-abline(v=mean(heights$Height), lty="dashed", lwd=2, col="blue")
+abline(v=mean(heights$Child), lty="dashed", lwd=2, col="blue")
 
 # Plot the 95% confidence interval (2.5% - 97.5%)
-CI_025 = mean(heights$Height) - 1.96*sd(heights$Height)
-CI_975 = mean(heights$Height) + 1.96*sd(heights$Height)
+CI_025 <- mean(heights$Child) - 1.96*sd(heights$Child)
+CI_975 <- mean(heights$Child) + 1.96*sd(heights$Child)
 abline(v=CI_025, lty="dotted", lwd=2, col="blue")
 abline(v=CI_975, lty="dotted", lwd=2, col="blue")
 
@@ -932,7 +1006,7 @@ abline(v=CI_975, lty="dotted", lwd=2, col="blue")
 dev.off()
 
 # Write a system command as a text string
-cmdstr = paste("open ", pdffn, sep="")
+cmdstr <- paste("open ", pdffn, sep="")
 cmdstr
 
 # Send the command to the computer system's Terminal/Command Line
@@ -944,7 +1018,7 @@ system(cmdstr)
 The difference in means is very small, even though it appears to be 
 statistically significant. 
 
-### This is a VERY IMPORTANT lesson: "statistically significant" DOES NOT ALWAYS MEAN "practically "significant","interesting", "scientifically relevant", etc.
+### This is a VERY IMPORTANT lesson: "statistically significant" DOES NOT ALWAYS MEAN "practically significant", "interesting", "scientifically relevant", etc.
  
 The difference may have to do with:
 
@@ -964,44 +1038,43 @@ a lot different. Can we test for this?
 ```{r}
 # Yes! The null hypothesis is that the ratio of the variances is 1:
 
-Ftest_result = var.test(x=heights$Midparent, y=heights$Height, ratio=1, alternative="two.sided")
+Ftest_result <- var.test(x=heights$Midparent, y=heights$Child, ratio=1, alternative="two.sided")
 Ftest_result
 ```
 
 We get extremely significant rejection of the null. What is the likely cause of the lower variance in the midparent data?
 
-
-For the complex story of Galton's original data, see:
-[http://www.medicine.mcgill.ca/epidemiology/hanley/galton/](http://www.medicine.mcgill.ca/epidemiology/hanley/galton/)
+======
+For the complex story of Galton's original data, [go here](http://www.medicine.mcgill.ca/epidemiology/hanley/galton/).
 
 #### [James A. Hanley (2004). 'Transmuting' women into men: Galton's family data on human stature. The American Statistician, 58(3) 237-243.](http://www.medicine.mcgill.ca/epidemiology/hanley/reprints/hanley_article_galton_data.pdf)
  
 BTW, Galton was both a genius, and promoted some deeply flawed ideas
 like [eugenics](http://isteve.blogspot.com/2013/01/regression-toward-mean-and-francis.html).
-
+======
 
 We noted before that child and parent heights might not be independent. Let's test this!
 
-QUESTION: is there a relationship?
+QUESTION: is there a relationship between parent and child height?
 
 Start by plotting the data:
 
 ```{r}
-plot(x=heights$Midparent, y=heights$Height)
+plot(x=heights$Midparent, y=heights$Child)
 
 # It looks like there is a positive relationship: taller parents have taller children.
 
 # However, it's a little bit hard to tell for sure, because Galton's data is only measured to the half-inch, so many dots are plotting on top of each other.  We can fix this by "jittering" the data:
 
 # Plot the data, with a little jitter
-plot(x=jitter(heights$Midparent), y=jitter(heights$Height))
+plot(x=jitter(heights$Midparent), y=jitter(heights$Child))
 ```
 
 It looks like there's a positive relationship, which makes sense.  Can we confirm this with a statistical test?
 
 ```{r}
 # Let's build a linear model (lm)
-lm_result = lm(formula=Height~Midparent, data=heights)
+lm_result <- lm(formula=Child~Midparent, data=heights)
 lm_result
 
 # This just has the coefficients; this doesn't tell us much.
@@ -1020,23 +1093,21 @@ You can get some standard diagnostic regression plots with:
 
 ```{r}
 # Let's plot the regression line on top of the points
-intercept_value = lm_result$coefficients["(Intercept)"]
-slope_value = lm_result$coefficients["Midparent"]
-
+intercept_value <- lm_result$coefficients["(Intercept)"]
+slope_value <- lm_result$coefficients["Midparent"]
 
 # Plot the points
-plot(x=jitter(heights$Midparent), y=jitter(heights$Height))
+plot(x=jitter(heights$Midparent), y=jitter(heights$Child))
 
 # Add the line
-
 abline(a=intercept_value, b=slope_value, col="blue", lwd=2, lty="dashed")
 
 # It's a little hard to tell if the slope is 1:1 or not, because the x-axis and y-axis aren't the same. Let's fix this.
 
 # Plot the points
-xlims = c(5*12, 6.5*12)
-ylims = c(5*12, 6.5*12)
-plot(x=jitter(heights$Midparent, factor=3), y=jitter(heights$Height, factor=3), xlab="Midparent height", ylab="Child height", xlim=xlims, ylim=ylims)
+xlims <- c(5*12, 6.5*12)
+ylims <- c(5*12, 6.5*12)
+plot(x=jitter(heights$Midparent, factor=3), y=jitter(heights$Child, factor=3), xlab="Midparent height", ylab="Child height", xlim=xlims, ylim=ylims)
 title("Galton's height data")
 
 # Add the regression line
@@ -1050,16 +1121,14 @@ Is the slope statistically different from 1:1?
 
 ```{r}
 # We can test this by subtracting a 1:1 relationship from the data, and seeing if the result has a slope different from 0
-child_minus_1to1 = heights$Height - (1/1*heights$Midparent)
-heights2 = heights
-heights2 = cbind(heights2, child_minus_1to1)
+child_minus_1to1 <- heights$Child - (1/1*heights$Midparent)
+heights2 <- heights
+heights2 <- cbind(heights2, child_minus_1to1)
 ```
-
-
 
 ```{r}
 # Let's build a linear model (lm)
-lm_result2 = lm(formula=child_minus_1to1~Midparent, data=heights2)
+lm_result2 <- lm(formula=child_minus_1to1~Midparent, data=heights2)
 lm_result2
 
 # This just has the coefficients; this doesn't tell us much
@@ -1073,17 +1142,14 @@ summary(lm_result2)
 anova(lm_result2)
 ```
 
-
-
 ```{r}
 # You can get some standard diagnostic regression plots with:
 plot(lm_result2)
 
 # Let's plot the regression line on top of the points
-intercept_value = lm_result2$coefficients["(Intercept)"]
-slope_value = lm_result2$coefficients["Midparent"]
+intercept_value <- lm_result2$coefficients["(Intercept)"]
+slope_value <- lm_result2$coefficients["Midparent"]
 ```
-
 
 ```{r}
 # Plot the points
@@ -1106,1137 +1172,17 @@ Why do tall parents tend to produce offspring shorter than themselves? Why does 
 What are possible statistical consequences/hazards of this?
 
 ### Why is all of this rarely explained when regression is taught?
+
 =======
----
-title: "R - Quantifying Species Diversity and Trait Diversity from by-Species Inventory Lists: VEGAN "
-output: html_notebook
----
 
-This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. 
-
-Using this Notebook will be much more understandable if you have worked through the lesson "Introducing R, R Studio and R Notebooks."  
-
-In this Notebook, we're going to start working right away coding. Some examples will be with tiny data sets, which are often referred to as "Toy" data sets. Other examples will immediately be real and sometimes quite large data sets, such as the 2015 complete inventory of New York City Street Trees. With these, lessons will include creating small data sets, exploring and filtering and importing and subsetting and re-shaping larger data sets. 
-
-Assuming that you have a prior background in basic statistics from high school or intro biology or some other course, you're likely familiar with concepts about data plotting (histograms, x-y plots) and  summary statistics (means, standard deviations) and testing (t-tests, ANOVA). We will be doing some of that. 
-
-In addition, you will start to learn about biodiversity statistics, such as quantifying biodiversity in terms of species and their abundances and quantitatively comparing how biodiversity may differ from one location to another. Topics in systematics such as species nomenclature and phylogenetics will be connected to the use of large databases where data are stored, from biogeography to genomics. 
-
-This notebook adapts from extensive teaching material have been developed via an NSF-supported research center at the University of Tennessee called NIMBIOS, the National Institute for Mathematical and Biological Synthesis, with notable contributions by Nick Matzke and Dan Warren. I also draw heavily on tutorials from R Open Science and, for the VEGAN and PICANTE packages, from tutorials by VEGAN developer Jari Oksanen and Pete Clark.  
-
-As you work through this and companion R Notebooks, you will be encouraged to explore a range of databases and tools: the NYC tree map and NYC Open Data, BIEN (for plants), GBIF (for all organisms) and others. These explorations can and should blend working through these notebooks and also perusing how the database tools work in a Web browser. 
-
-
-
-#Defining terms - a toy example
-
-```{r}
-#What's below assumes that you have some familiarity with R, at the level of assigned R notebook homework: Introduction to R, RStudio and R Notebooks. 
-#We are going to do something simple. We are going to define a complex variable in the form of a vector.
-#Ecologists would tend to call this a sample. Tree ecologists might call it a "stand" of trees.
-#Think of each individual letter as an individual organism. Each unique letter is a different species that was found within a defined spatial area, a scoop of seawater, or during an interval of time while watching or listening to critters. 
-one=c("A","A","A","A","A","A","B","B","B","B","B","B","C","C","C","C","C","C","D","E","F","G","H")
-one
-```
-
-Now we have output. That came from the last line, line 30. 
-
-What does this output mean? It is priting our sample, as a vector variable. Just be looking at how we typed in the variables, or at the output, it's possible to see that Species A, Species B and Species C are all equally common. In contrast, Species D, E, F and G are rare in this sample. Each appears only once, known as "singletons."
-
-
-```{r}
-#If we wanted to review other aspects of the variable just created, we can use some of the commands below
-class(one)
-length(one)
-unique(one)
-```
-
-```{r}
-#Here is another sample:
-three=c("A","A","A","A","A","A","B","B","B","B","B","B","B","C","C","C","C","C","C","C","D","E","F","G","Q")
-#practice using some of the commands above, for one. Then answer the questions below.
-class(three)
-length(three)
-unique(three)
-table(three)
-```
-
-##Add to your notebook with answers to these questions
-
-####Are both variables the same type? What is another name for a "character" variable? What other types of variables are there?
-
-####What commands are useful for gaining information about sample size or species richness? Are the samples the same size? Are they the same richness? 
-
-####What did the commands unique and table reveal, and how are they helpful in comparing the two variables?
-
-
-####What does abundance mean? For example, what do "high abundance" and "low abundance" mean? Is this related to commonness and rarity? Might this be related to being endangered or extinction prone? Do you have information about abundance from this output? 
-
-We will now be starting to move beyond just entering data in to R and looking at it. Now we need to add three packages to your R Studio software, and then load those packages. This is another super-important lesson that you'll adapt for repeated use.
-
-```{R}
-#install(plyr)
-#This line for installing is "commented out" because you don't need to keep re-installing a package if it's already installed. You just need to load the package, which is done in the lines below with the "library" command.
-#install(vegan)
-#install(labdsv)
-library(vegan)
-library(labdsv)
-```
-
-
-```{r}
-one
-one.ab=count(one)
-#We are using something called a function. This function, called "count" does exactly that. It looks for unique elements in the variable, counts each out. The output is a table of each of the species and the count refers to the number of occurrences in the sample. 
-one.ab
-```
-
-```{r}
-three
-three.ab=count(three)
-three.ab
-```
-
-Now that we have quantification of the commonness of A, B and C in the sample called "one", which we can compare to the sample called "three". In both, they are equally common, almost. They all appear at leaset six times. In contrast, other species are singletons. We can think about this in terms of proportion. In sample "one" there are six A out of twenty-three total, or 6/23 or 0.26. In the sample "three",  the singletons (E, F, G and Q) are in a proportion of one in 25, 1/25 or 0.04.
-
-
-```{R}
-#We can combine two of these vectors to  compare them, which will use the R packages VEGAN and LABDSV.
-#But before we do the combining, we must add a variable to allow keeping track of which sample is which
-one.ab=data.frame("one", one.ab)
-one.ab
-#This added a first column with every row populated by the string variable "one"
-#Let's also re-name columns. Later, our analyses of species richenss will need specifically named variables. 
-names(one.ab)<-c("ListID", "SpeciesID", "Freq")
-one.ab
-```
-
-```{R}
-#Repeat for the other sample
-three.ab=data.frame("three", three.ab)
-three.ab
-#This added a first column with every row populated by the string variable "three"
-#Let's also re-name columns. Later, our analyses of species richenss will need specifically named variables. 
-names(three.ab)<-c("ListID", "SpeciesID", "Freq")
-three.ab
-```
-
-```{r}
-#We are going to use a command called "rbind" to combine these two samples into one, in a format that keeps track of which is which
-onethree=rbind(one.ab, three.ab)
-onethree
-dim(onethree)
-#Next, we will use a powerful function in a package called LABDSV. 
-#That means we must load this package. (You may need to install it before loading it).
-#library("labdsv")
-#Now we have access to the function "matrify". It converts this list of sample IDs, species and site-specific abundances into a matrix in which species names are column headings, and row names are samples. To do this, it creates a master list of all species in all samples. A matrix like this is useful for quantifying multiple aspects of biodiversity. 
-onethree.ab<-matrify(onethree)
-onethree.ab
-#If we look at the dimensions of this matrix, what does it mean? What is 2? What is 9?
-dim(onethree.ab)
-```
-The command "dim" refers to the dimension of this data frame: it has two rows and nine columns. 
-
-This command is super-helpful in keeping track of changes in your data-frame as you do things like sub-set or otherwise re-arrange columns or rows. 
-
-## After you have a matrix: 
-
-### What is a Diversity Index? (There are many indices!)
-
-Let's start by defining one. It's the Shannon-Weaver Diversity Index (H). This may be familiar if you have taken ecology or conservation biolgoy. 
-
-This index examines each species for the proportion of individuals that it contributes to the total individuals of all species in the sample (Pi). 
-
-If S is the total number of species in the transect (i.e., the species richness), 
-Diversity,   H  =  - SUM OVER species 1 to species i(Pi)*(ln(Pi))
-							(NOTE: "ln" is the natural logarithm and i refers to the ith species)
-
-
-As an example, let's return to the data above, where N total = 23 individuals:
-
-```{r}
-one
-length(one)
-```
-
-
-where N total = 23 individuals
-
-Let Ni be the number of individuals of any given species, and Pi = Ni/Ntotal:
-
-Species	Ni	Pi            	ln(Pi)  	Pi * ln(Pi)
-A	      6	  6/23 = 0.26   	-1.34   	-0.35
-B	      6	  6/23 = 0.26   	-1.34   	-0.35
-C	      6	  6/23 = 0.26   	-1.34   	-0.35
-D       1   1/23 = 0.045	  -3.13    	-0.136
-E       1   1/23 = 0.045	  -3.13    	-0.136
-F       1   1/23 = 0.045	  -3.13    	-0.136
-G       1   1/23 = 0.045	  -3.13    	-0.136
-H       1   1/23 = 0.045	  -3.13    	-0.136
-Q       0   0/23 = 0          0          0
-				H = -(-1.73)
-				
-You can try doing a similar calculation for Sample "three" and then compare to the values obtained from R using the VEGAN package, which is done with the command below
-
-```{r}
-(shannon<-diversity(onethree.ab, index = "shannon"))
-```
-				
-
-Another measure of diversity, Simpson's index. There are actually a lot of different versions of Simpsons index, all roughly based on the likelihood that any two randomly encountered individuals are the same species. 
-
-In VEGAN, it is calculated as
-
-D = 1 - Sum(p^2)
-
-where p = n/N
-
-where each n refers to the number of organisms of that particular species
-and N refers to the number of organisms of all species
-
-Species	ni	p=n/N           p^2  
-A	      6	  6/23=0.26       0.068
-B	      6	  6/23=0.26       0.068
-C	      6	  6/23=0.26       0.068
-D	      1	  1/23=0.043      0.00189
-E	      1	  1/23=0.043      0.00189
-F	      1	  1/23=0.043      0.00189
-G	      1	  1/23=0.043      0.00189
-H	      1	  1/23=0.043      0.00189
-Q       0	  0
-
-                SUM         0.214
-
-D = 1 - Sum(p^2) = 0.786
-
-```{r}
-simpson<-diversity(onethree.ab, index = "simpson")
-simpson
-```
-
-
-
-
-
-# Using R to check your manual calculations of H, J
-
-Let's do a more realistic comparison of samples. Here are data from two real NYC blocks, in Inwood, and the street trees growing on them
-
-```{r}
-#First let's make a vector with a list of trees on Cumming Street, 
-#which is in Inwood, a Manhattan neighborhood
-cummings=c("Ginkgo biloba",
-"Acer rubrum",
-"Ginkgo biloba",
-"Pyrus calleryana",
-"Tilia americana",
-"Tilia cordata",
-"Tilia cordata",
-"Platanus x acerifolia",
-"Quercus palustris",
-"Platanus x acerifolia",
-"Tilia americana",
-"Styphnolobium japonicum",
-"Tilia americana",
-"Ginkgo biloba",
-"Prunus serrulata")
-#Here's another Inwood block, the very short and beautiful block of West 217th Street
-West217 = c("Tilia cordata",
-"Gleditsia triacanthos var. inermis",
-"Tilia cordata",
-"Malus",
-"Carpinus japonica",
-"Acer saccharum",
-"Pawlonia tomentosa",
-"Tilia cordata",
-"Tilia tomentosa",
-"Tilia cordata")
-```
-
-
-```{r}
-#You can get a count of the trees by asking for the length of the vectors you just created
-length(cummings)
-length(West217)
-#The command unique would count the number of species on the block
-unique(cummings)
-unique(West217)
-#you can combine the two into one step
-length(unique(cummings))
-length(unique(West217))
- 
-```
-
-
-```{r}
-#Now let's turn these into tables that show frequency
-cummings.ab=count(cummings)
-cummings.ab
-West217.ab=count(West217)
-  #Now
-cummings.ab=data.frame("cummings", cummings.ab)
-names(cummings.ab)<-c("ListID", "SpeciesID", "Freq")
-cummings.ab
-West217.ab=data.frame("West217", West217.ab)
-names(West217.ab)<-c("ListID", "SpeciesID", "Freq")
-```
-
-
-
-
-```{r}
-#Simple way to get diversity statistics, if a bit repetitive, inefficient, and error-prone
-shannonC<-diversity(cummings.ab$Freq, index = "shannon")
-shannonC
-shannonW<-diversity(West217.ab$Freq, index = "shannon")
-shannonW
-simpsonC<-diversity(cummings.ab$Freq, index = "simpson")
-simpsonC
-simpsonW<-diversity(West217.ab$Freq, index = "simpson")
-simpsonW
-```
-
-
-```{r}
-#A better way: combine and matrify!
-inwood=rbind(cummings.ab, West217.ab)
-inwood
-inwood.mat=matrify(inwood)
-inwood.mat
-```
-
-
-
-```{r}
-shannon<-diversity(inwood.mat, index = "shannon")
-shannon
-simpson<-diversity(inwood.mat, index = "simpson")
-simpson
-```
-
-
-```{R}
-#Let's add more "toy" data so we can continue to delve into what can be done
-#We need to add more samples if we want to move toward making multiple pairwise comparisons
-two=c("A","A","A","A","A","A","B","B","B","B","B","B","B","B","C","C","C","C","C","C","D","D","D","D","D","D","D","E","F","E","E","E","E","E","F","F","F","F","F","F","F","F","F","G","G","G","G","G","G","H","H","H","H","H","H","H","H")
-five=c("A","A","A","A","A","A","B","B","B","B","B","B","B","D","D","D","D","D","D","D","J","K","L","M","N")
-#Here are two additional samples named "two" and "five"
-#By adding to this chunk of code (and running it), see if you can add to the output above to obtain similar data
-two.ab=count(two)
-two.ab
-five.ab=count(five)
-five.ab
-#Repeating what we did earlier, to process these lists so that we can incorporate them into an abundance matrix
-two.ab=data.frame("two", two.ab)
-two.ab
-five.ab=data.frame("five", five.ab)
-five.ab
-names(two.ab)<-c("ListID", "SpeciesID", "Freq")
-names(five.ab)<-c("ListID", "SpeciesID", "Freq")
-one.ab
-three.ab
-two.ab
-five.ab
-ab=rbind(one.ab, three.ab, two.ab, five.ab)
-ab
-dim(ab)
-#ab<-ab[,2:4]
-abundance<-matrify(ab)
-abundance
-```
-
-## After you have a bigger matrix: 
-
-### What is a Similarity or Dissimilarity Index?
-
-
-What can we do with this bigger matrix? For starters, we can use an index to measure the similarity (or dissimilarity) of any two pairs of lists in the matrix
-
-There are many different ways to measure community similarity or dissimilarity. 
-
-An enduringly useful pairwise index that uses abundance data is called the Bray-Curtis coefficient, which is a ratio. 
-
-First, to get the top/numerator of the ratio: for all species across all samples, compute the difference in abundance between a pair of samples (as an absolute value). Then, all of those absolute differences are summed.
-
-Next, to get the bottom/denominator of the ratio: sum the total individuals in the pair of samples
-
-For our simple examples of samples "one" and "five": 
-
-            "one"           "five"      |abs diff|
-A 	           6	            6               0
-B	             6	            7	              1 
-C              6              0               6
-D	             1              7	              6
-E		           1              0               1
-F		           1              0               1 
-G		           1              0               1 
-H		           1              0               1 
-Q		           0              0               0 
-J		           0              1               1
-K		           0              1               1
-L		           0              1               1
-M		           0              1               1
-N		           0              1               1
-
-sum           23             25              22
-
-
-Bray-Curtis = 22/(23+25) = 0.458
-
-
-A simple pairwise index that uses only presence-absence data is called Jaccard's Coefficient of similarity, J. 
-
-J = a / (n - d)
-
-where a is the number of "positive matches" (+ +, species found in two lists), d is the number of negative matches (- - , species found in neither list) and n is the total number of possible matches (based on the total number of taxa found across all lists). 
-
-For our simple examples of samples "one" and "five": 
-
-            "one"           "five" 
-A 	           x	            x
-B	             x	            x	 
-C              x
-D	             x              x	
-E		           x
-F	             x  	
-G	             x	
-H	             x
-Q	           	
-J		                          x
-K                             x
-L                             x
-M                             x    
-N                             x
-
-
-in which a = 3, d = 1, n = 14
-
-so J  =  3 / (14 - 1) = 0.769 
-
-This index will vary between zero and one. 
-
-There are many other ways to measure pair-wise similarities. 
-
-If there are more than two lists, it's possible to put together a matrix of pair-wise values for the index, which is what the code below does. 
-
-```{r}
-#the function vegdist is used on the matrix, the metric specified. The assumption is that the data are abundance data, even though some indices require binary data. So the unstated and default argument that is always used in vegdist is that  binary=FALSE. This can and should be changed if computing a presence-absence metric like Jaccard.
-bray = vegdist(abundance, "bray") 
-bray
-jaccard = vegdist(abundance, "jaccard", binary=T)
-jaccard
-```
-
-
-
-```{r}
-#Now that there are four samples, it makes sense to start seeing if this is enough samples to gauge diversity across these samples. Vegan can compute the cumulative number of species across all four, and then plot them. It will take the plots in random order. Other options for this method argument include "collector" which is the order in which they are entered into the matrix. Another is "rarefaction" which will adjust to take into account that each sample may have a different number of individuals.
-accurve<-specaccum(abundance, method="random", permutations=100)
-plot(accurve$sites, accurve$richness,
-     xlab="Number of Sites",
-     ylab="Species Richness",
-     main="Now with four samples")
-accurve2<-specaccum(abundance, method="rarefaction", permutations=100)
-plot(accurve2$sites, accurve$richness,
-     xlab="Number of Sites",
-     ylab="Species Richness",
-     main="Rarefaction, with four samples")
-```
-## For this you might want an even bigger matrix (but let's finish up with some plotting): 
-
-### What is an Multi-dimensional Ordination? 
-
-
-```{r}
-head(abundance)
-example_NMDS=metaMDS(abundance, k=2) # Our community-by-species matrix 
-# K=2 is setting the number of reduced dimensions. Increase if high stress is problem. 
-#"The stress, or the disagreement between 2-D configuration and predicted values from the regression"
-
-#A good rule of thumb: stress > 0.05 provides an excellent representation in reduced dimensions, > 0.1 is great, >0.2 is good/ok, and stress > 0.3 provides a poor representation
-
-plot(example_NMDS)
-test.plot<-ordiplot(example_NMDS,type="n") #Ordination plot function especially for congested plots
-points(test.plot, "species", pch=21, col="red", bg="yellow")
-
-test.plot<-ordiplot(example_NMDS,type="n") #Ordination plot function especially for congested plots
-points(test.plot, "sites", col="blue", cex=0.9)
-
-test.plot<-ordiplot(example_NMDS,type="n") #Ordination plot function especially for congested plots
-points(test.plot, "species", pch=21, col="red", bg="yellow")
-text(test.plot, "sites", col="blue", cex=0.9)
-
-test.plot<-ordiplot(example_NMDS,type="n") #Ordination plot function especially for congested plots
-text(test.plot, "species", pch=21, col="red", bg="yellow")
-points(test.plot, "sites", col="blue", cex=0.9)
-
-
-```
-
-
-
-
-
-
-
-```{r}
-getwd()
-list.files()
-```
-
-If you did everything correctly, your list should include a file called "2015StreeTreesCensus_TREES.csv"
-
-This last lesson was a critically important lesson. When you're working in R, you are always in a working directory. By default, the software will work in this directory whenevery you try to open/import and save/close/export files. 
-
-Note: In your head, eventually:
- 
- "wd" will come to mean "working directory"
-
-The extension (after the dot) is "csv" which stands for "comma separated values". 
-
-If you again exit (temporarily) from R Studio, you could go to other software (Excel, Google Sheets) and open the file there. (Feel free to tray that.) 
-
-Let's instead open this file in R Studio, and as we do that also create a simplified version of the long filename. 
-
-```{r}
-fn <- read.csv("2015StreetTreesCensus_TREES.csv", header=TRUE)
-#fn stands for "file name" which is perhaps a bit too simplified. Let's change that to ALLtrees
-ALLtrees=fn
-#Now let's use a command to examine the dimensions of the data
-dim(ALLtrees)
-# Wow. There are 683,788 rows in this data set. One row for each street tree. There are also 42 columns.
-#Let's look through all 42 column headings
-class(ALLtrees)
-
-#Let's look through all 42 column headings
-colnames(ALLtrees)
-# Let's look at the first six lines of data
-head(ALLtrees)
-```
-
-
-
-```{r}
-#library(plyr)
-count(ALLtrees$spc_latin)
-count(ALLtrees$spc_common)
-
-```
-Notice the top line, Line 1, in this table. There are 31,619 rows in this data frame where there is not a Latin name or a common name. Can you think why this might be?
-
-One hint is that you can substantially eliminate it by confining the analysis to species that have status="ALIVE"
-
-Another way to do it is to eliminate all cases where the name is missing
-
-
-```{r}
-dim(ALLtrees)
-Strees=subset(ALLtrees, status=="Alive", select=c(created_at:spc_common, address:y_sp))
-Strees=as.data.frame(Strees)
-dim(Strees)
-```
-
-
-```{r}
-dim(ALLtrees)
-Strees=subset(ALLtrees, spc_common!="", select=c(created_at:spc_common, address:y_sp))
-Strees=as.data.frame(Strees)
-dim(Strees)
-```
-
-
-```{r}
-head(Strees)
-levels(Strees$spc_latin);levels(Strees$spc_common)
-```
-
-
-```{r}
-freqtable=count(Strees$spc_common)
-freqtable
-```
-
-
-
-```{r}
-sum(freqtable$freq)
-max(freqtable$freq)
-min(freqtable$freq)
-median(freqtable$freq)
-hist(freqtable$freq)
-hist(freqtable$freq, freq=F)
-
-```
-
-This is incredibly important output. First, you now know which tree is the rarest among 132 different species of street trees on NYC strees? Which is most common? You may need  to scroll in the output above.
-
-Can you write a line of code to compute the frequency of this most common species as a proportion of all NYC street trees? 
-
-Also, look at the histogram. There is only one species at the maximum - exceeding 80,000 occurrences city-wide. This is the most "popular" or common tree in NYC. There are three more tree species that have between 50-thousand and 70-thousand occurrences. And a few more that exceed 10-thousand occurrences. Nearly 120 of the 132 species planted are less common than that. 
-
-Although these are deliberately planted trees, this histogram is remarkably similar to what would be found in natural communities of organisms. The words seem a little counter-intuitive: "Being an extremely common species is necessarily extremely rare; it is common to belong to a rare species." But that's what this graph is showing, and it does make sense if you think about it.
-
-```{r}
-#Can we now calculate the diversity indices we were computing above? 
-#We could try something simple, like:
-NYCshannon=diversity(freqtable$freq, index = "shannon")
-NYCspecies=spec
-richNYCshannon
-#Yes, but we need to be sure to set up our data so that the package VEGAN can run its functions properly. #First, you need to transpose (with the function t), dropping the first column of row numbers
-#What this does is puts all the frequency data in one row, with 132 columns
-Strees.ab <- as.data.frame(t(freqtable[,-1]))
-Strees.ab
-```
-
-```{r}
-#This is a little weird, because the species labels are now gone 
-#By default, R assigned variable names to all the variables (in columns): v1, v2, v3, ... v132
-#To get rid of those and replace the species names
-#We can get them from original frequency table (the column called x)
-colnames(Strees.ab)= freqtable$x
-Strees.ab
-```
-
-```{r}
-#Now you can get things like species richness, which is the number of species
-(specnumber(Strees.ab))
-#That's a little silly, because we could use a simpler command, which is the length of the list of species
-(length(Strees.ab))
-#You can also get things like diversity indices, like the Shannon index or Simpson index
-(shannon<-diversity(Strees.ab, index = "shannon"))
-(simpson<-diversity(Strees.ab, index = "simpson"))
-```
-
-
-```{r}
-#Previously, we were working with a list of trees for the whole city; now we'll work by borough
-dim(Strees)
-#We use the command sub-set and ask to get only Brooklyn trees, and to exclude trees
-#where there is missing data for species name (which happens because trees are stumps or dead)
-#notice that the equal sign is "==" (hit the equals key twice)
-#also notice that the not-equal sign is "!=" (exclamation point then equals)
-Brooklyn=subset(Strees, boroname=="Brooklyn" & spc_common!="", select=c(created_at:spc_common, address:y_sp))
-dim(Brooklyn)
-#Now we are going to get a frequency breakdown, by species, in a table
-Brooklynfreq=count(Brooklyn$spc_common)
-Brooklynfreq
-#We are going to transpose that list (from one column to one row)
-Brooklyn.ab <- as.data.frame(t(Brooklynfreq[,-1]))
-Brooklyn.ab
-#We need to add back in the species names across all the columns
-colnames(Brooklyn.ab)= Brooklynfreq$x
-Brooklyn.ab
-#Now you can get things like species richness, which is the number of species
-#That's sort of silly, because we know there are 132 species from the command "unique"
-(specnumber(Brooklyn.ab))
-(length(Brooklyn.ab))
-  #You can also get things like diversity indices, like the Shannon index or Simpson index
-(shannon<-diversity(Brooklyn.ab, index = "shannon"))
-(simpson<-diversity(Brooklyn.ab, index = "simpson"))
-```
-
-For practice, go throught his code and modify it so that you can get data for another borough, or even for all the boroughs. 
-
-```{r}
-#But there is a way to somewhat steamline this, which 
-#We were actually using with the Toy example at the very beginning. So let's bring that back
-#Get a frequency table from the full subset of Brooklyn street tree data, as before
-Brooklynfreq=count(Brooklyn$spc_common)
-#We are not going to transpose
-#Instead, we are going to add an initial left-hand column to the frequency table
-#identifying it as the data from Brookly and give three super-specific column names to the 3 columsn
-BrooklynAB=data.frame("Brooklyn", Brooklynfreq[,1:2])
-names(BrooklynAB) <- c("ListID", "SpeciesID", "Freq")
-head(BrooklynAB)
-```
-
-
-```{r}
-#Repeat the sub-setting and frequency table making and formatting for the other 4 boroughs
-Queens=subset(Strees, boroname=="Queens" & spc_common!="", select=c(created_at:spc_common, address:y_sp))
-Queensfreq=count(Queens$spc_common)
-QueensAB=data.frame("Queens", Queensfreq[,1:2])
-names(QueensAB) <- c("ListID", "SpeciesID", "Freq")
-Bronx=subset(Strees, boroname=="Bronx" & spc_common!="", select=c(created_at:spc_common, address:y_sp))
-Bronxfreq=count(Bronx$spc_common)
-BronxAB=data.frame("Bronx", Bronxfreq[,1:2])
-names(BronxAB) <- c("ListID", "SpeciesID", "Freq")
-Manhattan=subset(Strees, boroname=="Manhattan" & spc_common!="", select=c(created_at:spc_common, address:y_sp))
-Manhattanfreq=count(Manhattan$spc_common)
-ManhattanAB=data.frame("Manhattan", Manhattanfreq[,1:2])
-names(ManhattanAB) <- c("ListID", "SpeciesID", "Freq")
-Staten=subset(Strees, boroname=="Staten Island" & spc_common!="", select=c(created_at:spc_common, address:y_sp))
-Statenfreq=count(Staten$spc_common)
-StatenAB=data.frame("Staten", Statenfreq[,1:2])
-names(StatenAB) <- c("ListID", "SpeciesID", "Freq")
-
-```
-
-
-```{r}
-#Combine all five of these new by-species frequency lists into one, and use the matrify command```
-nycAB=rbind(BrooklynAB, BronxAB, ManhattanAB, QueensAB, StatenAB)
-nycAB=matrify(nycAB)
-```
-
-
-```{r}
-#the function vegdist is used on the matrix, the metric specified. The assumption is that the data are abundance data, even though some indices require binary data. So the unstated and default argument that is always used in vegdist is that  binary=FALSE. This can and should be changed if computing a presence-absence metric like Jaccard.
-bray = vegdist(nycAB, "bray") 
-bray
-jaccard = vegdist(nycAB, "jaccard", binary=T)
-jaccard
-```
-
-
-
-
-```{r}
-#Now that there are four samples, it makes sense to start seeing if this is enough samples to gauge diversity across these samples. Vegan can compute the cumulative number of species across all four, and then plot them. It will take the plots in random order. Other options for this method argument include "collector" which is the order in which they are entered into the matrix. Another is "rarefaction" which will adjust to take into account that each sample may have a different number of individuals.
-accurve<-specaccum(nycAB, method="random", permutations=50)
-plot(accurve$sites, accurve$richness,
-     xlab="Number of Sites",
-     ylab="Species Richness",
-     main="Now with five boroughs")
-accurve2<-specaccum(nycAB, method="rarefaction", permutations=50)
-plot(accurve2$sites, accurve$richness,
-     xlab="Number of Sites",
-     ylab="Species Richness",
-     main="Rarefaction, with five samples")
-```
-## For this you might want an even bigger matrix (but let's finish up with some plotting): 
-
-### What is an Multi-dimensional Ordination? 
-
-
-```{r}
-head(nycAB)
-example_NMDS=metaMDS(nycAB, k=2) # Our community-by-species matrix 
-# K=2 is setting the number of reduced dimensions. Increase if high stress is problem. 
-#"The stress, or the disagreement between 2-D configuration and predicted values from the regression"
-
-#A good rule of thumb: stress > 0.05 provides an excellent representation in reduced dimensions, > 0.1 is great, >0.2 is good/ok, and stress > 0.3 provides a poor representation
-
-plot(example_NMDS)
-test.plot<-ordiplot(example_NMDS,type="n") #Ordination plot function especially for congested plots
-points(test.plot, "species", pch=21, col="red", bg="yellow")
-
-test.plot<-ordiplot(example_NMDS,type="n") #Ordination plot function especially for congested plots
-points(test.plot, "sites", col="blue", cex=0.9)
-
-test.plot<-ordiplot(example_NMDS,type="n") #Ordination plot function especially for congested plots
-points(test.plot, "species", pch=21, col="red", bg="yellow")
-text(test.plot, "sites", col="blue", cex=0.9)
-
-test.plot<-ordiplot(example_NMDS,type="n") #Ordination plot function especially for congested plots
-text(test.plot, "species", pch=21, col="red", bg="yellow")
-points(test.plot, "sites", col="blue", cex=0.9)
-
-
-```
-
-
-
-
-
-#### Produce diversity data
-
-```{r}
-produce=read.csv("2013 Produce Diversity Data - completed.csv", row.names=1, header=T)
-head(produce)
-dim(produce)
-```
-
-This is a big matrix that could be analyzed as community data. 
-
-
-```{r}
-#Now that there are four samples, it makes sense to start seeing if this is enough samples to gauge diversity across these samples. Vegan can compute the cumulative number of species across all four, and then plot them. It will take the plots in random order. Other options for this method argument include "collector" which is the order in which they are entered into the matrix. Another is "rarefaction" which will adjust to take into account that each sample may have a different number of individuals.
-accurve<-specaccum(nycAB, method="random", permutations=50)
-plot(accurve$sites, accurve$richness,
-     xlab="Number of Sites",
-     ylab="Species Richness",
-     main="Now with five boroughs")
-accurve2<-specaccum(nycAB, method="rarefaction", permutations=50)
-plot(accurve2$sites, accurve$richness,
-     xlab="Number of Sites",
-     ylab="Species Richness",
-     main="Rarefaction, with five samples")
-```
-
-```{r}
-example_NMDS=metaMDS(produce, k=2) # Our community-by-species matrix 
-# K=2 is setting the number of reduced dimensions. Increase if high stress is problem. 
-#"The stress, or the disagreement between 2-D configuration and predicted values from the regression"
-
-#A good rule of thumb: stress > 0.05 provides an excellent representation in reduced dimensions, > 0.1 is great, >0.2 is good/ok, and stress > 0.3 provides a poor representation
-
-plot(example_NMDS)
-test.plot<-ordiplot(example_NMDS,type="n") #Ordination plot function especially for congested plots
-points(test.plot, "species", pch=21, col="red", bg="yellow")
-
-test.plot<-ordiplot(example_NMDS,type="n") #Ordination plot function especially for congested plots
-points(test.plot, "sites", col="blue", cex=0.9)
-
-test.plot<-ordiplot(example_NMDS,type="n") #Ordination plot function especially for congested plots
-points(test.plot, "species", pch=21, col="red", bg="yellow")
-text(test.plot, "sites", col="blue", cex=0.9)
-
-test.plot<-ordiplot(example_NMDS,type="n") #Ordination plot function especially for congested plots
-text(test.plot, "species", pch=21, col="red", bg="yellow")
-points(test.plot, "sites", col="blue", cex=0.9)
-
-
-```
-
-
-
-
-####WHAT ABOUT TRAIT DATA?
-
-
-Jared - this is where I ran out of gas and time. The tree data are a good place to learn this stuff
-
-
-We can go back to our initial huge data set of NYC Street trees
-```{r}
-#head(ALLtrees)
-names(ALLtrees)
-hist(ALLtrees$tree_dbh)
-plot(tree_dbh~boroname, data=ALLtrees, outline=T)
-plot(tree_dbh~boroname, data=ALLtrees, outline=F)
-plot(tree_dbh~health, data=ALLtrees)
-plot(tree_dbh~health, data=ALLtrees, outline=F)
-plot(tree_dbh~sidewalk, data=ALLtrees)
-plot(tree_dbh~sidewalk, data=ALLtrees, outline=F)
-plot(tree_dbh~spe, data=ALLtrees, outline=T)
-##Would be great to develop code to help them see better in boxplots
-plot(tree_dbh~spc_common, data=ALLtrees, outline=F, horizontal=T)
-```
-
-
-# TESTING DATA (OLD - FROM GALTON DATA SET)
-
-```{r}
-# Make sure variable columns are numeric
-heights$Family = as.numeric(heights$Family)
-heights$Father = as.numeric(heights$Father)
-heights$Height = as.numeric(heights$Height)
-heights$Kids = as.numeric(heights$Kids)
-
-# Let's add the Midparent column
-heights[,c("Father","Mother")]
-
-# Take the mean of Father and Mother columns, store in column "Midparent"
-heights$Midparent = apply(X=heights[,c("Father","Mother")], MARGIN=1, FUN=mean)
-
-# View the new column
-head(heights)
-
-# Population Mean Between Two Independent Samples:
-# http://www.r-tutor.com/elementary-statistics/inference-about-two-populations/population-mean-between-two-independent-samples
-
-# (change "Child" to "Height")
-ttest_result1 = t.test(x=heights$Midparent, y=heights$Height, paired=FALSE, alternative="two.sided")
-ttest_result1
-```
-
-But wait, this test assumes that the samples from each population 
-are independent. Do you think parent heights and child heights are 
-independent?
-
-Probably not. Actually, these samples are paired, so let's
-check that:
-
-Population Mean Between Two Matched Samples:
-http://www.r-tutor.com/elementary-statistics/inference-about-two-populations/population-mean-between-two-matched-samples
-
-```{r}
-ttest_result2 = t.test(x=heights$Midparent, y=heights$Height, paired=TRUE, alternative="two.sided")
-ttest_result2
-
-# Compare the two:
-ttest_result1
-ttest_result2
-
-# Interestingly, it looks like parents are slightly taller than the children!
-
-# Is this statistically significant?
-
-# But is it a large effect?  Is it *practically* significant?
-```
-
-# PLOTTING DATA
-
-```{r}
-# Let's plot the histograms
-library(lattice)
-hist(heights$Midparent)
-hist(heights$Height)
-```
-
-That's a little hard to compare, due to the different automated scaling of the x-axis.
-
-All the code below is *not* in chunks
-
-You can also run code in an R Notebook by highlighting line(s) and pressing the "Run" icon below, or by pressing Control+Enter. But, the code will show up in the Console window (below). If you want the output to be incorporated into your R Notebook, then put the code into a chunk and then run the chunk. Output will not only appear in this window, but will also be saved into an accompanying 
-notebook html file if you save your work before exiting.
-
-Another option shown below is how to make the plots (which will show up in the Plots window, lower right) and then how to save the plot in PDF format when you're happy with it.
-
-```{r}
-# Let's fix the x-axis to be (5 feet, 7 feet)
-xlims = c(5*12, 7*12)
-
-hist(heights$Midparent, xlim=xlims)
-hist(heights$Height, xlim=xlims)
-
-# Let's fix the y-axis to be (0, 220)
-ylims = c(0, 220)
-hist(heights$Midparent, xlim=xlims, ylim=ylims)
-hist(heights$Height, xlim=xlims, ylim=ylims)
-
-# Let's plot the means and 95% confidence intervals on top
-
-# Midparent values
-hist(heights$Midparent, xlim=xlims, ylim=ylims)
-
-# Plot the mean
-abline(v=mean(heights$Midparent), lty="dashed", lwd=2, col="blue")
-
-# Plot the 95% confidence interval (2.5% - 97.5%)
-CI_025 = mean(heights$Midparent) - 1.96*sd(heights$Midparent)
-CI_975 = mean(heights$Midparent) + 1.96*sd(heights$Midparent)
-abline(v=CI_025, lty="dotted", lwd=2, col="blue")
-abline(v=CI_975, lty="dotted", lwd=2, col="blue")
-
-# Child values
-hist(heights$Height, xlim=xlims, ylim=ylims)
-
-# Plot the mean
-abline(v=mean(heights$Height), lty="dashed", lwd=2, col="blue")
-
-# Plot the 95% confidence interval (2.5% - 97.5%)
-CI_025 = mean(heights$Height) - 1.96*sd(heights$Height)
-CI_975 = mean(heights$Height) + 1.96*sd(heights$Height)
-abline(v=CI_025, lty="dotted", lwd=2, col="blue")
-abline(v=CI_975, lty="dotted", lwd=2, col="blue")
-
-# Let's put the plot into nice PDF format to save it
-
-# Open a PDF for writing
-pdffn = "Galton_height_histograms_v1.pdf"
-pdf(file=pdffn, width=8, height=10)
-
-# Do 2 subplots
-par(mfrow=c(2,1))
-
-# Midparent values
-hist(heights$Midparent, xlim=xlims, ylim=ylims, xlab="height (inches)", ylab="Count", main="Midparent heights")
-
-# Plot the mean
-abline(v=mean(heights$Midparent), lty="dashed", lwd=2, col="blue")
-
-# Plot the 95% confidence interval (2.5% - 97.5%)
-CI_025 = mean(heights$Midparent) - 1.96*sd(heights$Midparent)
-CI_975 = mean(heights$Midparent) + 1.96*sd(heights$Midparent)
-abline(v=CI_025, lty="dotted", lwd=2, col="blue")
-abline(v=CI_975, lty="dotted", lwd=2, col="blue")
-
-# Child values
-hist(heights$Height, xlim=xlims, ylim=ylims, xlab="height (inches)", ylab="Count", main="Child heights")
-
-# Plot the mean
-abline(v=mean(heights$Height), lty="dashed", lwd=2, col="blue")
-
-# Plot the 95% confidence interval (2.5% - 97.5%)
-CI_025 = mean(heights$Height) - 1.96*sd(heights$Height)
-CI_975 = mean(heights$Height) + 1.96*sd(heights$Height)
-abline(v=CI_025, lty="dotted", lwd=2, col="blue")
-abline(v=CI_975, lty="dotted", lwd=2, col="blue")
-
-# Close the PDF writing
-dev.off()
-
-# Write a system command as a text string
-cmdstr = paste("open ", pdffn, sep="")
-cmdstr
-
-# Send the command to the computer system's Terminal/Command Line
-system(cmdstr)
-
-# The PDF should hopefully pop up, e.g. if you have the free Adobe Reader
-```
-
-The difference in means is very small, even though it appears to be 
-statistically significant. 
-
-### This is a VERY IMPORTANT lesson: "statistically significant" DOES NOT ALWAYS MEAN "practically "significant","interesting", "scientifically relevant", etc.
- 
-The difference may have to do with:
-
-* Galton's 'method' of dealing with the fact that male and female children have different average heights -- he multiplied the female heights by 1.08!
-
-* Different nutrition between the generations
-
-* Maybe the adult children weren't quite all fully grown
-
-* Chance rejection of the null
-
-Who knows?
-
-You may have noticed that the standard deviations look to be 
-a lot different. Can we test for this?
-
-```{r}
-# Yes! The null hypothesis is that the ratio of the variances is 1:
-
-Ftest_result = var.test(x=heights$Midparent, y=heights$Height, ratio=1, alternative="two.sided")
-Ftest_result
-```
-
-We get extremely significant rejection of the null. What is the likely cause of the lower variance in the midparent data?
-
-
-For the complex story of Galton's original data, see:
-[http://www.medicine.mcgill.ca/epidemiology/hanley/galton/](http://www.medicine.mcgill.ca/epidemiology/hanley/galton/)
-
-#### [James A. Hanley (2004). 'Transmuting' women into men: Galton's family data on human stature. The American Statistician, 58(3) 237-243.](http://www.medicine.mcgill.ca/epidemiology/hanley/reprints/hanley_article_galton_data.pdf)
- 
-BTW, Galton was both a genius, and promoted some deeply flawed ideas
-like [eugenics](http://isteve.blogspot.com/2013/01/regression-toward-mean-and-francis.html).
-
-
-We noted before that child and parent heights might not be independent. Let's test this!
-
-QUESTION: is there a relationship?
-
-Start by plotting the data:
-
-```{r}
-plot(x=heights$Midparent, y=heights$Height)
-
-# It looks like there is a positive relationship: taller parents have taller children.
-
-# However, it's a little bit hard to tell for sure, because Galton's data is only measured to the half-inch, so many dots are plotting on top of each other.  We can fix this by "jittering" the data:
-
-# Plot the data, with a little jitter
-plot(x=jitter(heights$Midparent), y=jitter(heights$Height))
-```
-
-It looks like there's a positive relationship, which makes sense.  Can we confirm this with a statistical test?
-
-```{r}
-# Let's build a linear model (lm)
-lm_result = lm(formula=Height~Midparent, data=heights)
-lm_result
-
-# This just has the coefficients; this doesn't tell us much.
-
-# What's in the linear model? A list of items:
-names(lm_result)
-
-# See the statistical results
-summary(lm_result)
-
-# Analysis of variance (ANOVA)
-anova(lm_result)
-```
-
-You can get some standard diagnostic regression plots with:
-
-```{r}
-# Let's plot the regression line on top of the points
-intercept_value = lm_result$coefficients["(Intercept)"]
-slope_value = lm_result$coefficients["Midparent"]
-
-
-# Plot the points
-plot(x=jitter(heights$Midparent), y=jitter(heights$Height))
-
-# Add the line
-
-abline(a=intercept_value, b=slope_value, col="blue", lwd=2, lty="dashed")
-
-# It's a little hard to tell if the slope is 1:1 or not, because the x-axis and y-axis aren't the same. Let's fix this.
-
-# Plot the points
-xlims = c(5*12, 6.5*12)
-ylims = c(5*12, 6.5*12)
-plot(x=jitter(heights$Midparent, factor=3), y=jitter(heights$Height, factor=3), xlab="Midparent height", ylab="Child height", xlim=xlims, ylim=ylims)
-title("Galton's height data")
-
-# Add the regression line
-abline(a=intercept_value, b=slope_value, col="blue", lwd=2, lty="dashed")
-
-# Add the 1:1 line
-abline(a=0, b=1, col="darkgreen", lwd=2, lty="dashed")
-```
-
-Is the slope statistically different from 1:1?
-
-```{r}
-# We can test this by subtracting a 1:1 relationship from the data, and seeing if the result has a slope different from 0
-child_minus_1to1 = heights$Height - (1/1*heights$Midparent)
-heights2 = heights
-heights2 = cbind(heights2, child_minus_1to1)
-```
-
-
-
-```{r}
-# Let's build a linear model (lm)
-lm_result2 = lm(formula=child_minus_1to1~Midparent, data=heights2)
-lm_result2
-
-# This just has the coefficients; this doesn't tell us much
-# What's in the linear model? A list of items:
-names(lm_result2)
-
-# See the statistical results
-summary(lm_result2)
-
-# Analysis of variance (ANOVA)
-anova(lm_result2)
-```
-
-
-
-```{r}
-# You can get some standard diagnostic regression plots with:
-plot(lm_result2)
-
-# Let's plot the regression line on top of the points
-intercept_value = lm_result2$coefficients["(Intercept)"]
-slope_value = lm_result2$coefficients["Midparent"]
-```
-
-
-```{r}
-# Plot the points
-
-plot(x=jitter(heights2$Midparent), y=jitter(heights2$child_minus_1to1), xlim=xlims, xlab="Midparent heights", ylab="Child heights minus 1:1 line", main="Relationship after subtracting 1:1 line")
-
-# Add the regression line
-abline(a=intercept_value, b=slope_value, col="blue", lwd=2, lty="dashed")
-
-# Add the expected line if the relationship was 1:1
-abline(a=0, b=0, col="darkgreen", lwd=2, lty="dashed")
-```
-
-Yep, the relationship is definitely different than 1:1
-
-Why is the relationship between parent height and offspring height LESS THAN 1:1???
-
-Why do tall parents tend to produce offspring shorter than themselves? Why does height seem to "regress"? What about the children of short parents?  Do they 'regress'?
- 
-What are possible statistical consequences/hazards of this?
-
-### Why is all of this rarely explained when regression is taught?
-
-###### Edits
+# EDITS
 
 # Make sure to delete all of these edits and the very first "Jared" section when finished.
 # Line 37 may need to be updated w/ correct line number when notebook is done.
 # Line 205, Added explanation of H and D
 # Line 400 and 401 summary statement: need something short and sweet, similar to line 205
+# Line 550, what is NYCspecies=spec trying to do, along with Line 551
+# Added 652 and 654 description and questions...are these instructive?
+# The Produce diversity section is confusing; not sure what direction we want to take this. Section skipped starting at 708; go back and look over this with Hilary.
+# Added some stuff at 767 to help visualize ALLtrees DBH boxplots better.
+# 776, consider splitting notebook into two here.

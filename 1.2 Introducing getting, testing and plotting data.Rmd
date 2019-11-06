@@ -1,0 +1,511 @@
+---
+title: "R - Introducing getting, testing and plotting data"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. 
+
+To make this Notebook more understandable, use it after reading and working through the lessons "Introducing R, R Studio and R Notebooks" and "R - Introducing variables and summary statistics" 
+
+Together, Nick Matzke and Dan Warren developed extensive teaching material via an NSF-supported research center at the University of Tennessee called NIMBIOS, the National Institute for Mathematical and Biological Synthesis. I took a workshop with Dan in 2016 and am grateful for all he taught about R and R pedagogy. 
+
+In this Notebook, I've adapted a lot of lessons that their lessons, aiming to use them to explore and analyze a data set from the UNPAK project - Undergraduates Phenotyping Arabidopsis Knockouts. You will be introduced to some familiar statistical tests,  summary statistics, and some plotting. 
+
+# GETTING DATA
+
+Let's import some data from an UNPAK phenotyping experiment, similar to the one that's in progress for our class. 
+
+ADD INSTRUCTIONS ON HOW TO DOWNLOAD FROM COURSEWORKS INTO THE RIGHT WORKING DIRECTORY.
+#wd = "C:/Users/hcallaha/Desktop/Callahan/Data"
+#setwd(wd)
+
+Let's double-check that your imported data file is in the working directory:
+
+```{r}
+getwd()
+list.files()
+
+#Note: In your head, eventually:
+ 
+# "wd" will mean "working directory"
+
+```
+
+One of the files is  "BC_Expt3pt6.csv"       
+
+
+```{r}
+#One of the files should be  "BC_Expt3pt6.csv" and now we want to read it into R Studio.
+#We are going to use a read function
+UNPAKex<-read.csv("BC_Expt3pt6.csv")
+
+
+#Many of you may be familiar with Microsoft Excel, and using it to store data
+#Within Microsoft Excel, it is possible to save data into a "comma separated values" format (CSV)
+#The other parts of the file name are for Barnard College, Experiment 3, which is a third-generation experimental design used in the UNPAK project, 6 for the sixth such experiment conducted at Barnard. 
+
+
+
+#A few of you may be familiar with the READR package and the function READ_CSV 
+#While somewhat similar, there are reasons why we don't want the special type of 
+#dataframe known as a tibble. 
+#Those interested in learning more R and READR and tibbles can talk to me. 
+```
+
+It looks like nothing happened, but look over in the upper-right window, under the tab "Environment" and you will see what happened. 
+
+There is Data with 864 observations for 40 variables. 
+
+This is also referred to as the dimensions and class of the file just imported, and this is so important that there is an alternative to checking with with your R Studio environment, Directlyl using R commands, below. 
+
+```{r}
+#### Dimensions (rows, columns)
+dim(UNPAKex)
+class(UNPAKex)
+```
+
+If you want even more details, you can go back to that upper-right window and click on the blue circle with the tiny blue circle with a side-ways white triangle. Click on it and it will turn into a circle with a down-ward pointing triangle, and you'll get so names of variables and more.
+
+Alternatively, you can use R commands to look at things in this window:
+
+```{r}
+#### structure of the entire dataframe
+str(UNPAKex)
+#### structure of just one variable; notice the syntax can be generalized for any dataframe and any variable within a dataframe  --  str(dataframe$variable)
+str(UNPAKex$LineType)
+```
+
+So this is a dataframe, which is a big matrix of variables. 
+
+To quickly re-cap an earlier lessong, variables at their most simple are just one number
+
+```{r}
+#### Defining a string variable, v, or a numeric variable, n:
+v <- "variable"
+n <- 17
+v
+class(v)
+n
+class(n)
+```
+
+We also saw that it's possible to define and store list of numbers (called a vector):
+```{r}
+vars<-c("variableA", "variableB", "variableC")
+prime10<-c(1, 2, 3, 5, 7, 11, 13, 17, 19, 23)
+vars
+class(vars)
+prime10
+class(prime10)
+```
+
+You may even remember that we can coerce numeric variables into being string variables (or character variables), and even back in the other direction.
+
+
+
+```{r}
+#### coerce numeric variable to character variable
+prime10C<-as.character(prime10)
+prime10C
+class(prime10C)
+#### character variables that are numbers can be coerced to being numeric variables
+prime10N<-as.numeric(prime10C)
+prime10N
+class(prime10N)
+```
+
+This is all useful review, but not a sustainable or smart way to store data consists of many long vectors for many variables.
+
+So we are now shifting for the rest of this lesson to using this dataset in R, a  dataframe. 
+
+Conceptually, we can think of a dataframe as a table with rows representing observations and the different variables reported for each observation defining the columns. Dataframes are particularly useful for datasets because we can combine different data types into one object.
+
+A large proportion of data analysis challenges start with data stored in a dataframe. 
+
+Since we just imported a dataframe, how can we then look at it and explore it. (Which should always happen before you try to summarize or analyze it.)
+
+```{r}
+UNPAKex
+#The command head(UNPAKex) is asking to print out just the first six lines in the file after importing; similarity the command tail(UNPAKex) reads the last six 
+head(UNPAKex)
+tail(UNPAKex)
+
+
+dim(UNPAKex)
+class(UNPAKex)
+names(UNPAKex)
+```
+
+After you submit* the chunk, you should get three results from that chunk of commands. 
+
+The first command returns** the entirety of the dataframe: 
+864 rows x 40 variables
+
+(*Programming uses similar verbs: "submit" means you pressed enter and the software then did something, or "executed" the program in the chunk. 
+(** Here is another verb typically used in coding:  "returns" means the output or response or results after comands are submitted by the user and executed by the computer software)
+
+This chunk of code and the output from it help clarify why it's often useful to look at only the top 6 rows with the command "head" or the and bottom 6 rows of the data table with the command "tail"
+
+Now close the output from the chunk above. 
+
+Then edit the chunk in a few ways:
+a. don't delete anything, but "comment out" the commands in the chunk using #
+b. add three commands dim, class, names (using the syntax dim(UNPAKex) etc)
+
+Now re-run the chunk. What should be returned is:
+- one line telling you the dimensions of the dataframe (864 x 40)
+- one line telling you the type of object ("dataframe")
+- many lines listing  names of all  variables; these are the column headings for 40 columns
+
+##############################################################################
+
+To gain familiarity and understanding of our UNPAK experiment, let's look at just a few of the 40 variables. These will help to understand the scope of the experiment, the experimental factors being explored, and the experimental results that were quantified.
+
+
+We can do this by focusing on one variable at a time:
+
+```{R}
+levels(UNPAKex$Experiment)
+```
+
+This simply tells you that all 864 rows in this dataframe came from one experiment. This may seem useless, but it is relevant because the UNPAK project involves many different campuses doing experiments, and often doing the same general experiment over and over again. 
+
+So "BC" here refers to Barnard College and "pt6" refers to this being the sixth part of Experiment 3 conducted at Barnard College. What's interesting is that we could combine many dataframes (from pt1, pt2, pt3 and so forth). Then we could analyze them together. 
+
+But we aren't going to do that today. We'll instead look within one iteration* of Expt3.
+
+("Iteration" refers to doing the same thing over and over; it's a synonym for repetition that emphasizes that the repetition is algorithm-like to simplify statistics and statistical software coding.)
+
+Let's look at some things that do vary within BC_Expt3pt6
+
+```{R}
+levels(UNPAKex$LineType)
+levels(UNPAKex$Accession)
+levels(UNPAKex$Row)
+levels(UNPAKex$Col)
+levels(UNPAKex$Flat)
+```
+
+Okay, that's cool because it reminds us that there are mutants grown alongside the wild-type genotypes COL70000, augmented by 10 natural ecotypes as additional phytometers,  and also many knockout lines. 
+
+But why are the last two lines returning "NULL" instead of information about the Column and the Flat? If we go back and review what we say with the "HEAD" command, we saw that these variables exist but they are numbers. 
+
+```{r}
+#What type of data and what data are in dataframe under column heading "Col" and "Flat"?
+class(UNPAKex$Col)
+head(UNPAKex$Col)
+class(UNPAKex$Flat)
+head(UNPAKex$Flat)
+```
+
+A-ha! That makes sense Rows are indicated by letters but the columns are indicated by integers. Similarly, the flats are indicated by integers. 
+
+Why did this happened and what can we do? Let's re-run the STR command on our dataframe
+
+```{r}
+str(UNPAKex)
+```
+
+What happened? The Base R function READ.CSV imports and reads the file in an "opinionated" manner, converting variable properties. Specifically, character variables are turned into something called factors, variables with strictly integers values are read and designated as integers, and all variables with non-integer values are designated as  numeric variables
+
+(Sometimes, variable names in the first row (column headings) are changed because two columns have the same heading, or because on of the column headings is blank.)
+
+We see that a lot of variables were read as integers, but that some of them should be factors and some of them should probably be numeric rather than integer. 
+
+Let's change Col to a factor and then get levels:
+
+```{r}
+Col<-as.factor(Col)
+levels(Col)
+```
+
+Wait. What did we do wrong? Oh, right, we have to tell R that the variable Col is in the Dataframe UNPAKex
+
+```{r}
+Col<-as.factor(UNPAKex$Col)
+levels(UNPAKex$Col)
+```
+
+Wait. It's still not correct. Why? If you don't see it, run these two commands and compare
+
+```{r}
+levels(Col)
+levels(UNPAKex$Col)
+```
+
+
+Figure it out and change both Col and Flat to factors and check the levels. 
+
+
+Now let's look at some of the so-called "response variables" which are the trait data collected in this phenotpying experiment. 
+
+Let's start with just one, which is days.to.bolt ? This is a continuous response variable, but it was read as an integer. 
+
+```{r}
+class(UNPAKex$days.to.bolt)
+```
+
+
+Let's coerce the integer format into the numeric format for this variable:
+
+```{r}
+UNPAKex$days.to.bolt<-as.numeric(UNPAKex$days.to.bolt)
+class(UNPAKex$days.to.bolt)
+head(UNPAKex$days.to.bolt)
+```
+
+
+Great, let's reapeat that for a bunch of variables:
+
+```{R}
+UNPAKex$mainbranch<-as.numeric(UNPAKex$mainbranch)
+UNPAKex$ttl.maininfl.branch<-as.numeric(UNPAKex$ttl.maininfl.branch)
+UNPAKex$basal.branch<-as.numeric(UNPAKex$basal.branch)
+UNPAKex$branch.basalbranch<-as.numeric(UNPAKex$branch.basalbranch)
+UNPAKex$fruitnum<-as.numeric(UNPAKex$fruitnum)
+UNPAKex$aborted.fruits<-as.numeric(UNPAKex$aborted.fruits)
+```
+
+
+Let's combine those last two variables, defining a new composite variable: 
+
+```{r}
+UNPAKex$total.fruits<-(UNPAKex$fruitnum + UNPAKex$aborted.fruits)
+class(UNPAKex$total.fruits)
+head(UNPAKex$total.fruits)
+```
+
+Let's review all that's changed. We've added a variable, so we expect to change the dimension. We can also check to see if our requested coercion of variables h appened
+
+```{r}
+str(UNPAKex)
+```
+
+
+## SUMMARY STATISTICS
+
+Let's begin by trying to get some means for our data, shall we
+```{r}
+colMeans(UNPAKex)
+```
+Annoyingly, we got an error message. It makes sense, but how can we remedy it?
+
+
+```{r}
+#We can do something a bit awkward and count from our first, second and third variables and upward. We find three numeric variables that are 18th, 19th, and 21st in the dataframe. So let's look at the 18th variable. 
+colMeans(UNPAKex[18])
+```
+
+Hmmm. This is telling us that we cannot get a value because of missing data. There is a solution. 
+```{r}
+# Let's add something called an argument: na=T. This is in contrast to the unspecified and default argument, which is that na=FALSE. (In other words, there are no missing data.)
+colMeans(UNPAKex[18], na=TRUE)
+```
+
+
+```{R}
+# We could actually do this for multiple variables by specifying a vector of variables:
+colMeans(UNPAKex[c(18,19,21, 26, 27, 31, 41)], na=T)
+```
+
+
+```{R}
+# Another way to get summary statistics is with the function SUMMARY.This one is super-simple and gives the mean and median, then the mark that shows the 25th and 75th quartile, the minimum and the maximum.
+summary(UNPAKex[18])
+```
+
+```{r}
+# Let's get fancy. First, describe a new and smaller dataframe (X) with only the seven numeric variables that we care the most about. Then use the summary command:
+X<-UNPAKex[c(18,19,21, 26, 27, 31, 41)]
+summary(X)
+```
+
+
+One thing useful about  SUMMARY is it allows you to quickly scan your data to see if the numbers make sense based on the variables measured, and the scale/units used for those measurements. It also shows you missing variables. Notably in this data set there are a lot of average fruit length data missing.  
+
+A cool thing about R is that there are always multiple ways to do things. Here is another way to get means, also sensitive to missing data. To understand what I'm talking about, compare the following two lines;
+```{R}
+sapply(X, mean)
+sapply(X, mean, na.rm=T)
+```
+
+You can see that means are not calculated when missing data are encountered. Adding the argument "na.rm=T" removed the missing variables. Now we can proceed and get many other summary statistics:
+```{R}
+sapply(X, sd, na.rm=T)
+sapply(X, min, na.rm=T)
+sapply(X, max, na.rm=T)
+colSums(!is.na(X))
+```
+
+# GROUPING DATA AND GETTING GROUPED MEANS
+
+
+```{r}
+library(dplyr)
+#Briefly, we will explore how to sub-set data (also known as grouping data)
+#First let's group by the LineType, which is MUTANT or PHYTO
+UNPAKlines <- UNPAKex %>% group_by(LineType)
+UNPAKlines
+
+#This appears similar, it is critically different because we can pass the grouped dataframe to the function "summarise" (remembering to warn for missing data): 
+UNPAKlines %>% summarise(
+  days.to.bolt = mean(days.to.bolt, na=T),
+  fruitnum = mean(fruitnum, na=T)
+)
+
+```
+
+
+```{r}
+#We can recycle this code to re-group with a different factor, or different variables
+UNPAKacc <- UNPAKex %>% group_by(Accession)
+UNPAKacc
+
+#This appears similar, it is critically different because we can pass the grouped dataframe to the function "summarise" (remembering to warn for missing data): 
+UNPAKacc %>% summarise(
+  days = mean(days.to.bolt, na=T),
+  diameter = mean(diameter.at.bolt, na=T)
+)
+```
+
+# PLOTTING DATA
+
+```{r}
+#### Maybe do with base R graphics?
+#### Do a base R histogram
+#### Do a boxplot of one or two variables
+#### Do a boxplot of one variable, grouped (LineType, select only PHYTOMETERS and those 11)
+#### ADD SCATTERPLOT - days and diameter
+```
+
+
+
+
+```{r}
+# Let's do this with one of the all-time great data visualization packages. "gg" stands for "grammar of graphics" and this package is a cool way to create great graphics from data. 
+library(ggplot2)
+# with just one line, we are going to tell the package what data to use, which variable, and how to plot:
+#Let's now do a histogram
+ggplot(UNPAKex, aes(x=days.to.bolt)) + geom_histogram()
+```
+
+
+Wow. That's rather satisfying. Do you all know what a histogram is supposed to show? And why we might want to get rid of the gaps? And add a scale to the X-axis? And maybe change the color?
+
+```{r}
+ggplot(UNPAKex, aes(x=days.to.bolt)) + geom_histogram(binwidth=1)
+```
+
+```{r}
+#We can also adjust the color, and also assign a name to this graph ("p"):
+p<-ggplot(UNPAKex, aes(x=days.to.bolt)) + geom_histogram(binwidth=1, color = "blue", fill = "white")
+p
+```
+
+
+What ggplot2 does really well is to "overlay" new elements onto a base graph that's already been created. One way to do that is to give the base graph a name, and then continue to add to it. 
+
+
+```{R}
+# Using the "p+" part of the code, and to the first thing in the panel
+# add mean line, remembering to add the argument to adjust for the six missing data points
+p+ geom_vline(aes(xintercept=mean(UNPAKex$days.to.bolt, na=T)),
+            color="blue", linetype="dashed", size=1)
+```
+
+
+
+```{r}
+# Change histogram plot line colors by groups (and let's use the naming trick again)
+q<-ggplot(UNPAKex, aes(x=UNPAKex$days.to.bolt, color=UNPAKex$LineType, na=T)) +
+  geom_histogram(fill="white") + theme(legend.position="top")
+q
+```
+
+
+
+```{r}
+#mu <- ddply(df, "sex", summarise, grp.mean=mean(weight))
+
+
+                   
+
+
+
+means <- ddply(UNPAKex, "LineType", summarise, grp.mean=mean(UNPAKex$days.to.bolt, na.rm=T))
+means
+
+
+r<-ggplot(UNPAKex, aes(x=UNPAKex$days.to.bolt, color=LineType)) +
+  geom_histogram(fill="white")+
+  geom_vline(data=means, aes(xintercept=grp.means, color=LineType),
+             linetype="dashed")+
+  theme(legend.position="top")
+r
+```
+
+
+
+See more options here
+http://www.sthda.com/english/wiki/ggplot2-histogram-plot-quick-start-guide-r-software-and-data-visualization
+
+
+
+
+# TESTING DATA
+
+WILL DO A SIMPLE T-test 
+
+
+
+```{r}
+# Make sure variable columns are numeric
+heights$Family = as.numeric(heights$Family)
+heights$Father = as.numeric(heights$Father)
+heights$Height = as.numeric(heights$Height)
+heights$Kids = as.numeric(heights$Kids)
+
+# Let's add the Midparent column
+heights[,c("Father","Mother")]
+
+# Take the mean of Father and Mother columns, store in column "Midparent"
+heights$Midparent = apply(X=heights[,c("Father","Mother")], MARGIN=1, FUN=mean)
+
+# View the new column
+head(heights)
+
+# Population Mean Between Two Independent Samples:
+# http://www.r-tutor.com/elementary-statistics/inference-about-two-populations/population-mean-between-two-independent-samples
+
+# (change "Child" to "Height")
+ttest_result1 = t.test(x=heights$Midparent, y=heights$Height, paired=FALSE, alternative="two.sided")
+ttest_result1
+```
+
+But wait, this test assumes that the samples from each population 
+are independent. Do you think parent heights and child heights are 
+independent?
+
+Probably not. Actually, these samples are paired, so let's
+check that:
+
+Population Mean Between Two Matched Samples:
+http://www.r-tutor.com/elementary-statistics/inference-about-two-populations/population-mean-between-two-matched-samples
+
+```{r}
+ttest_result2 = t.test(x=heights$Midparent, y=heights$Height, paired=TRUE, alternative="two.sided")
+ttest_result2
+
+# Compare the two:
+ttest_result1
+ttest_result2
+
+# Interestingly, it looks like parents are slightly taller than the children!
+
+# Is this statistically significant?
+
+# But is it a large effect?  Is it *practically* significant?
+```
+
+
+

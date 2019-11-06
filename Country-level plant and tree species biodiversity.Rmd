@@ -1,0 +1,172 @@
+---
+title: "Country-level plant and tree species biodiversity"
+output: html_notebook
+---
+
+#Edits
+
+#Line 77: "tree" vs "Tree" subsetting
+#Line 141: 200,000 limit too large, takes too long
+
+##This notebook is all about lists of trees, focusing on by-country lists.
+It uses BIEN or GBIF databases to get lists of all plants.
+It also uses a list of all tree species globally, from the Global Tree Finder, which is a project of Botanical Gardens Conservation International. 
+It also includes an example of a paper published that lists trees in Puerto Rico. 
+At the bottom are some scripts for web-scraping Latin names of tree species online, such as from Wikipedia or elsewhere.
+
+By country: each student will choose 3-5 countries. Make sure that there are at least two students doing each country. 
+
+- Let's try to do some island nations of different sizes from the Caribbean
+
+- Let's also do lists by continental nations of different sizes on the mainland. 
+
+- the BIEN database is focused in the Americas, making this a good choice. 
+
+Download data on Trees from three sources:
+
+1.BIEN (all plants)
+
+```{r}
+library(BIEN)
+```
+
+## From BIEN 
+
+Let's get the list of plant species from Puerto Rico, using the function BIEN_list_country, and then let's see how much data that returns.
+
+```{r}
+PuertoRicoLIST <- BIEN_list_country(country = "Puerto Rico", cultivated = F)
+dim(PuertoRicoLIST)
+colnames(PuertoRicoLIST)
+```
+
+We see that there are 4,885 plant species on the list. Now let's get a list of all the plants observed in Puerto Rico using the function BIEN_occurrence_country. As we did above, we are excluding plants in cultivation. 
+
+```{r}
+PuertoRicoALL<-BIEN_occurrence_country(country = "Puerto Rico", cultivated=F)
+dim(PuertoRicoALL)
+colnames(PuertoRicoALL)
+head(PuertoRicoALL)
+```
+
+This takes longer. Why? Because there are so many species  on the list that occur many times. In the list above, each species occurred just once. Check this by comparing the dimensions of the two dataframes returned.  
+
+Let's use the R function unique to generate a list of each species in the list, just once. So, first we're going to create just a list of species. Then, for that new list, apply the function unique. 
+
+```{r}
+(PuertoRicoALLSP <- PuertoRicoALL$scrubbed_species_binomial)
+PuertoRicoUNI <- unique(PuertoRicoALLSP)
+length(PuertoRicoUNI)
+```
+
+It's interesting that this is a shorter list than we got for listing plants by country. That is probably because there are species known to exist (or to have existed) in Puerto Rico but there is not a matching occurrence observation with geocoded information. 
+
+Now, instead of the list or occurrence data, let's use Trait data to get Whole Plant Growth Form = trees; narrow to just those. This will be a data set for the entire BIEN database. It will not be species specific, nor country. 
+
+```{r}
+BIEN_trait_list()
+WPGF <- BIEN_trait_trait(trait = "whole plant growth form")
+head(WPGF)
+tail(WPGF)
+dim(WPGF)
+WPGF_tree <- subset(WPGF, trait_value == "tree")
+head(WPGF_tree)
+tail(WPGF_tree)
+dim(WPGF_tree)
+```
+
+# Many of the trait_value cells are spelled "Tree" with a capital. Those were left out of the WPGF_tree subset. We should address this. This would also be a good opportunity to teach them how to search for multiple variables, e.g. "tree" and "shrub".
+
+Okay, it's good to see that the BIEN database has 198,033 observations of trees.
+
+Now let's look at the intersection of the list of plant species from Puerto Rico (which includes trees and non-trees) and compare it to this Trait data (for whole plant growth form), which we already subset to be just trees. How long is that intersecting list? 
+
+
+```{r}
+dim(PuertoRicoLIST)
+PR_trees_BIEN1 <- intersect(WPGF_tree$scrubbed_species_binomial, PuertoRicoLIST$scrubbed_species_binomial)
+length(PR_trees_BIEN1)
+#write.csv <- PR_trees_BIEN
+```
+
+For the whole list obtained by using the BIEN_list_country function, there are 4885 species, and 487 of these are trees. 
+
+```{r}
+length(PuertoRicoUNI)
+PR_trees_BIEN2 <- intersect(WPGF_tree$scrubbed_species_binomial, PuertoRicoUNI)
+length(PR_trees_BIEN2)
+#write.csv <- PR_trees_BIEN
+```
+
+In contrast, for the list obtained using BIEN_occurrence functions which was then coerced into a unique list, there were only an initial 2062 species, 247 of them trees. 
+
+Let's try something else. I have a list of all the species that are trees according to Botanical Gardens Conservation International. This is from a service called Global Tree Finder (GTF). It's a total of about 60,000 species. 
+
+Let's look at the intersection of that long list with the Puerto Rico list.
+
+Reading the file from csv, the location of the file will need to match the path from the working directory - that part below is 
+
+"C:/Users/hcallaha/Documents/TEACHING/19-20/Lab in Plant Diversity/R Notebooks/List of trees and shrubs by taxonomic family - Wikipedia_files/
+
+You can also try importing from the files tab in the lower right window of the R Studio environment. 
+
+```{r}
+#trees60089 <- read.csv("C:/Users/hcallaha/Documents/TEACHING/19-20/Lab in Plant Diversity/R Notebooks/List of trees and shrubs by taxonomic family - Wikipedia_files/trees60089.csv")
+PR_trees_BIEN_GTF <- intersect(trees60089$species, PuertoRicoLIST$scrubbed_species_binomial)
+length(PR_trees_BIEN_GTF)
+PR_trees_BIEN_GTF
+```
+
+That's the longest list yet, possibly because this list includes a lot of palms? We can compare this to a recent publication focusing on a comprehensive list of Puerto Rican trees by Muscarella et al (from the Columbia E3B Department).
+
+https://doi.org/10.1371/journal.pone.0112843
+
+```{r}
+#muscarella <- read.csv("C:/Users/hcallaha/Documents/TEACHING/19-20/Lab in Plant Diversity/R Notebooks/List of trees and shrubs by taxonomic family - Wikipedia_files/Muscarella PR trees.csv")
+dim(muscarella)
+```
+
+Let's compare what we get from the GBIF database instead of the BIEN database. We can also get species occurrence by nation, and we need to lift the limit on the number of occurrences received because there will be many, even in a small nation. WARNING: This will take time to download. You may want to change the limit temporarily to a smaller number (N=20) to make sure that you are getting the right data from the right country. Once you're confident, then you can lift the limit to something higher. 
+
+```{r}
+library('rgbif')
+key <- name_suggest(q='Tracheophyta', rank=('phylum'))
+key
+PR <- occ_search(taxonKey = key$key, return = "data", country='PR', fields = c("scientificName", "species"), limit = 50000)
+dim(PR)           
+colnames(PR)
+head(PR)
+```
+
+# I tried creating the PR variable 4-5 times, waited up to 20 minutes and it still wasn't finished; 200,000 records is just too many. How many do you want to set the limit for? I set it for 10,000 and it finished in less than five minutes. I changed it to 50,000 and it took considerably longer (~15 minutes), but resulted in ~400 additional intersections with the BGCI list.
+
+Now let's look at the intersection of the GBIF occurrence list with the list of tree species, as we did with the BIEN data:
+
+```{r}
+PR_trees_BIEN_GBIF <- intersect(trees60089$species, PR$species)
+length(PR_trees_BIEN_GBIF)
+#PR_trees_BIEN_GBIF
+```
+
+
+## After running through this for Puerto Rico, try doing it again for other nations such as Jamaica, Grenada, Cuba.
+
+
+## Also do for some on-continent nations e.g., Belize, Nicaragua, Honduras, Costa Rica. 
+
+
+## Ultimately, some analyses:
+
+create a simple file with data from each island nation:
+
+- area in kilometers (look up - wikipedia or elsewhere)
+- the overall plant species richness 
+- tree species richness 
+
+sort from smallest to largest area
+
+plot area on the x-axis and species richness on the y-axis
+- do for all plants
+- do for trees only
+
+Repeat for On-Continent islands. Compare.
